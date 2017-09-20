@@ -86,6 +86,13 @@ public class RuangFormPanel extends JPanel {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				if (namaRuang.getText().isEmpty()) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Isi nama ruang</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaRuang.requestFocus();
+					return;
+				}
+				
 				Ruang ruang = new Ruang();
 				ruang.setRuang(namaRuang.getText());
 				ruang.setGedung(gedungValues.get(gedungCombobox.getSelectedIndex()));

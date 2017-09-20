@@ -8,6 +8,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
+import aps.controller.BarangTablePanel;
 import lancarjaya.component.ButtonActionPanel;
 import lancarjaya.component.ButtonK;
 
@@ -31,13 +32,13 @@ public class ButtonActionEditor extends AbstractCellEditor implements TableCellE
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object valueIn, boolean isSelected, int row,
 			int column) {
-		if ("jobTable".equals(actionName) && row == 0) {
+		if ("barang".equals(actionName) && row == 0) {
 			ButtonK searchButton = new ButtonK("Search");
 			searchButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					/*JobPanel jobPanel = (JobPanel) actionObject;
-					jobPanel.populteFilter();
-					jobPanel.showData();*/
+					BarangTablePanel barangTablePanel = (BarangTablePanel) actionObject;
+					barangTablePanel.populteFilter();
+					barangTablePanel.showData();
 				}
 			});
 			return searchButton;

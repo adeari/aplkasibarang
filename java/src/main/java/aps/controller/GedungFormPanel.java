@@ -9,6 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
@@ -64,6 +65,12 @@ public class GedungFormPanel extends JPanel {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				if (namaGedung.getText().isEmpty()) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Isi nama gedung</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaGedung.requestFocus();
+					return;
+				}
 				Gedung gedung = new Gedung();
 				gedung.setGedung(namaGedung.getText());
 				

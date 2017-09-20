@@ -48,6 +48,8 @@ public class RakFormPanel extends JPanel {
 	
 	private Combobox ruangCombobox;
 	private List<Ruang> ruangValues;
+	
+	private ActionListener gedungComboboxActionListener;
 
 	public RakFormPanel(JPanel jPanel) {
 		int width = Double.valueOf(jPanel.getPreferredSize().getWidth()).intValue() - 20;
@@ -71,11 +73,12 @@ public class RakFormPanel extends JPanel {
 		
 		gedungCombobox = new Combobox();
 		gedungCombobox.setPreferredSize(new Dimension(textWidth, 35));
-		gedungCombobox.addActionListener(new ActionListener() {
+		gedungComboboxActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				refreshRuangCombobox();
 			}
-		});
+		};
+		gedungCombobox.addActionListener(gedungComboboxActionListener);
 		add(gedungCombobox);
 		
 		labelK = new LabelK("Ruangan");
@@ -99,6 +102,20 @@ public class RakFormPanel extends JPanel {
 		simpanButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				
+				if (ruangCombobox.getSelectedItem() == null) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Ruangan tidak boleh kosong</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				if (namaRak.getText().isEmpty()) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Isi nama rak</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaRak.requestFocus();
+					return;
+				}
+				
 				Rak rak = new Rak();
 				rak.setRak(namaRak.getText());
 				rak.setRuang(ruangValues.get(ruangCombobox.getSelectedIndex()));
@@ -148,6 +165,7 @@ public class RakFormPanel extends JPanel {
 			gedungValues.clear();
 		}
 		gedungValues = (List<Gedung>) session.createQuery(criteriaQuery).getResultList();
+		gedungCombobox.removeActionListener(gedungComboboxActionListener);
 		gedungCombobox.removeAllItems();
 		if (gedungValues != null) {
 			for (Gedung gedung : gedungValues) {
@@ -155,29 +173,32 @@ public class RakFormPanel extends JPanel {
 			}
 		}
 		session.close();
-		return refreshRuangCombobox();
-	}
-	
-	private boolean refreshRuangCombobox() {
+		gedungCombobox.addActionListener(gedungComboboxActionListener);
 		if (gedungCombobox.getItemCount() == 0) {
 			JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Isi gedung dulu</span>",
 					"Perhatian", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
+		return refreshRuangCombobox();
+	}
+	
+	private boolean refreshRuangCombobox() {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 		
 		CriteriaQuery<Ruang> criteriaQuery = criteriaBuilder.createQuery(Ruang.class);
 		Root<Ruang> root = criteriaQuery.from(Ruang.class);
 		criteriaQuery.select(root);
-		criteriaQuery.where(criteriaBuilder.equal(root.get("gedung"), gedungValues.get(gedungCombobox.getSelectedIndex())));
+		if (gedungCombobox.getSelectedItem() != null) {
+			criteriaQuery.where(criteriaBuilder.equal(root.get("gedung"), gedungValues.get(gedungCombobox.getSelectedIndex())));
+		}
 		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("ruang")));
 		if (ruangValues != null) {
 			ruangValues.clear();
 		}
 		ruangValues = (List<Ruang>) session.createQuery(criteriaQuery).getResultList();
 		ruangCombobox.removeAllItems();
-		if (ruangValues != null) {
+		if (ruangValues != null && gedungCombobox.getSelectedItem() != null) {
 			for (Ruang Ruang : ruangValues) {
 				ruangCombobox.addItem(Ruang.getRuang());
 			}

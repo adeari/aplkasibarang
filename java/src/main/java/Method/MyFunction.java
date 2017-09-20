@@ -9,14 +9,14 @@ public class MyFunction {
 		string = string.replace("\\r\\n", "\n");
 		return string;
 	}
-	public static Date getDateFroString(String string) {
+	public static Date getDateFromString(String string) {
 		if (string != null && (!string.isEmpty())) {
 			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 			try {
 				java.util.Date date = formatter.parse(string);
 				return new Date(date.getTime());
 			} catch (ParseException e) {
-				System.out.println("eeee");
+				System.out.println(" error date  = ".concat(string));
 			}
 		}
 		return null;

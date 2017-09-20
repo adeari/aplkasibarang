@@ -53,6 +53,9 @@ public class BarangFormPanel extends JPanel {
 	private Combobox rakCombobox;
 	private List<Rak> rakValues;
 
+	private ActionListener gedungComboboxActionListener;
+	private ActionListener ruangComboboxActionListener;
+
 	public BarangFormPanel(JPanel jPanel) {
 		int width = Double.valueOf(jPanel.getPreferredSize().getWidth()).intValue() - 20;
 		setPreferredSize(new Dimension(width, 600));
@@ -75,11 +78,12 @@ public class BarangFormPanel extends JPanel {
 
 		gedungCombobox = new Combobox();
 		gedungCombobox.setPreferredSize(new Dimension(textWidth, 35));
-		gedungCombobox.addActionListener(new ActionListener() {
+		gedungComboboxActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				refreshRuangCombobox();
 			}
-		});
+		};
+		gedungCombobox.addActionListener(gedungComboboxActionListener);
 		add(gedungCombobox);
 
 		labelK = new LabelK("Ruangan");
@@ -88,11 +92,12 @@ public class BarangFormPanel extends JPanel {
 
 		ruangCombobox = new Combobox();
 		ruangCombobox.setPreferredSize(new Dimension(textWidth, 35));
-		ruangCombobox.addActionListener(new ActionListener() {
+		ruangComboboxActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				refreshRakCombobox();
 			}
-		});
+		};
+		ruangCombobox.addActionListener(ruangComboboxActionListener);
 		add(ruangCombobox);
 
 		labelK = new LabelK("Rak");
@@ -117,11 +122,22 @@ public class BarangFormPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				if (namaBarang.getText().isEmpty()) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Isi nama barang</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaBarang.requestFocus();
+					return;
+				}
+				
 				Barang barang = new Barang();
 				barang.setBarang(namaBarang.getText());
 				barang.setGedung(gedungValues.get(gedungCombobox.getSelectedIndex()));
-				barang.setRuang(ruangValues.get(ruangCombobox.getSelectedIndex()));
-				barang.setRak(rakValues.get(rakCombobox.getSelectedIndex()));
+				if (ruangCombobox.getSelectedItem() != null) {
+					barang.setRuang(ruangValues.get(ruangCombobox.getSelectedIndex()));
+				}
+				if (rakCombobox.getSelectedItem() != null) {
+					barang.setRak(rakValues.get(rakCombobox.getSelectedIndex()));
+				}
 
 				Session session = HibernateUtil.getSessionFactory().openSession();
 				Transaction transaction = session.beginTransaction();
@@ -168,12 +184,14 @@ public class BarangFormPanel extends JPanel {
 			gedungValues.clear();
 		}
 		gedungValues = (List<Gedung>) session.createQuery(criteriaQuery).getResultList();
+		gedungCombobox.removeActionListener(gedungComboboxActionListener);
 		gedungCombobox.removeAllItems();
 		if (gedungValues != null) {
 			for (Gedung gedung : gedungValues) {
 				gedungCombobox.addItem(gedung.getGedung());
 			}
 		}
+		gedungCombobox.addActionListener(gedungComboboxActionListener);
 		session.close();
 		if (gedungCombobox.getItemCount() == 0) {
 			JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Isi gedung dulu</span>",
@@ -185,54 +203,56 @@ public class BarangFormPanel extends JPanel {
 	}
 
 	private void refreshRuangCombobox() {
-		if (gedungCombobox.getItemCount() > 0) {
-			Session session = HibernateUtil.getSessionFactory().openSession();
-			CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
-			CriteriaQuery<Ruang> criteriaQuery = criteriaBuilder.createQuery(Ruang.class);
-			Root<Ruang> root = criteriaQuery.from(Ruang.class);
-			criteriaQuery.select(root);
+		CriteriaQuery<Ruang> criteriaQuery = criteriaBuilder.createQuery(Ruang.class);
+		Root<Ruang> root = criteriaQuery.from(Ruang.class);
+		criteriaQuery.select(root);
+		if (gedungCombobox.getSelectedItem() != null) {
 			criteriaQuery.where(
 					criteriaBuilder.equal(root.get("gedung"), gedungValues.get(gedungCombobox.getSelectedIndex())));
-			criteriaQuery.orderBy(criteriaBuilder.asc(root.get("ruang")));
-			if (ruangValues != null) {
-				ruangValues.clear();
-			}
-			ruangValues = (List<Ruang>) session.createQuery(criteriaQuery).getResultList();
-			ruangCombobox.removeAllItems();
-			if (ruangValues != null) {
-				for (Ruang ruang : ruangValues) {
-					ruangCombobox.addItem(ruang.getRuang());
-				}
-			}
-			session.close();
-			refreshRakCombobox();
 		}
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("ruang")));
+		if (ruangValues != null) {
+			ruangValues.clear();
+		}
+		ruangValues = (List<Ruang>) session.createQuery(criteriaQuery).getResultList();
+		ruangCombobox.removeActionListener(ruangComboboxActionListener);
+		ruangCombobox.removeAllItems();
+		if (ruangValues != null && gedungCombobox.getSelectedItem() != null) {
+			for (Ruang ruang : ruangValues) {
+				ruangCombobox.addItem(ruang.getRuang());
+			}
+		}
+		ruangCombobox.addActionListener(ruangComboboxActionListener);
+		session.close();
+		refreshRakCombobox();
 	}
 
 	private void refreshRakCombobox() {
-		if (ruangCombobox.getItemCount() > 0) {
-			Session session = HibernateUtil.getSessionFactory().openSession();
-			CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
-			CriteriaQuery<Rak> criteriaQuery = criteriaBuilder.createQuery(Rak.class);
-			Root<Rak> root = criteriaQuery.from(Rak.class);
-			criteriaQuery.select(root);
-			criteriaQuery
-					.where(criteriaBuilder.equal(root.get("ruang"), ruangValues.get(ruangCombobox.getSelectedIndex())));
-			criteriaQuery.orderBy(criteriaBuilder.asc(root.get("rak")));
-			if (rakValues != null) {
-				rakValues.clear();
-			}
-			rakValues = (List<Rak>) session.createQuery(criteriaQuery).getResultList();
-			rakCombobox.removeAllItems();
-			if (rakValues != null) {
-				for (Rak rak : rakValues) {
-					rakCombobox.addItem(rak.getRak());
-				}
-			}
-			session.close();
+		CriteriaQuery<Rak> criteriaQuery = criteriaBuilder.createQuery(Rak.class);
+		Root<Rak> root = criteriaQuery.from(Rak.class);
+		criteriaQuery.select(root);
+		if (ruangCombobox.getSelectedItem() != null) {
+		criteriaQuery
+				.where(criteriaBuilder.equal(root.get("ruang"), ruangValues.get(ruangCombobox.getSelectedIndex())));
 		}
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("rak")));
+		if (rakValues != null) {
+			rakValues.clear();
+		}
+		rakValues = (List<Rak>) session.createQuery(criteriaQuery).getResultList();
+		rakCombobox.removeAllItems();
+		if (rakValues != null && ruangCombobox.getSelectedItem() != null) {
+			for (Rak rak : rakValues) {
+				rakCombobox.addItem(rak.getRak());
+			}
+		}
+		session.close();
 	}
 
 	private void afterSaved() {

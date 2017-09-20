@@ -8,7 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -21,15 +21,15 @@ private static final long serialVersionUID = 1L;
 	@Column(name = "id")
 	private int id;
 	
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(name="gedungid",referencedColumnName="id")
 	private Gedung gedung;
 	
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(name="ruangid",referencedColumnName="id")
 	private Ruang ruang;
 	
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(name="rakid",referencedColumnName="id")
 	private Rak rak;
 	

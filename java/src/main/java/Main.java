@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 
 import apps.component.MenuItem;
 import aps.controller.BarangFormPanel;
+import aps.controller.BarangTablePanel;
 import aps.controller.GedungFormPanel;
 import aps.controller.RakFormPanel;
 import aps.controller.RuangFormPanel;
@@ -20,6 +21,7 @@ public class Main {
 	private static RuangFormPanel ruangFormPanel;
 	private static RakFormPanel rakFormPanel;
 	private static BarangFormPanel barangFormPanel;
+	private static BarangTablePanel barangTablePanel;
 	private static JPanel panel;
 	
     public static void main(String[] args) {
@@ -41,6 +43,9 @@ public class Main {
         
         rakFormPanel = new RakFormPanel(panel);
         panel.add(rakFormPanel);
+        
+        barangTablePanel = new BarangTablePanel(panel);
+        panel.add(barangTablePanel);
         
         barangFormPanel = new BarangFormPanel(panel);
         panel.add(barangFormPanel);
@@ -87,6 +92,15 @@ public class Main {
     	});
     	menu.add(tambahBarang);
     	
+    	MenuItem barangTable = new MenuItem("Data Barang");
+    	barangTable.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			closesss();
+    			barangTablePanel.view();
+    		}
+    	});
+    	menu.add(barangTable);
+    	
     	frame.setJMenuBar(menubar);
         frame.pack();
         frame.setVisible(true);
@@ -99,5 +113,6 @@ public class Main {
     	gedungFormPanel.setVisible(false);
     	rakFormPanel.setVisible(false);
     	barangFormPanel.setVisible(false);
+    	barangTablePanel.setVisible(false);
     }
 }
