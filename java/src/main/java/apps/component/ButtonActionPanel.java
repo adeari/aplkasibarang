@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
-import lancarjaya.component.ButtonK;
 
 public class ButtonActionPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -24,7 +23,7 @@ public class ButtonActionPanel extends JPanel {
 		tableAccess = object;
 		row = null;
 		ButtonK editButton = new ButtonK("");
-		editButton.setIcon(new ImageIcon(getClass().getResource("/lancarjaya/icons/edit.png")));
+		editButton.setIcon(new ImageIcon(getClass().getResource("/apps/icons/edit.png")));
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				/*if ("jmlContainerinJobPanel".equals(handle)) {
@@ -37,7 +36,7 @@ public class ButtonActionPanel extends JPanel {
 			}
 		});
 		ButtonK deleteButton = new ButtonK("");
-		deleteButton.setIcon(new ImageIcon(getClass().getResource("/lancarjaya/icons/delete.png")));
+		deleteButton.setIcon(new ImageIcon(getClass().getResource("/apps/icons/delete.png")));
 		deleteButton.setBackground(Color.RED);
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

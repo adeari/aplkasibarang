@@ -8,8 +8,6 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 import aps.controller.BarangTablePanel;
-import lancarjaya.component.ButtonActionPanel;
-import lancarjaya.component.ButtonK;
 
 public class ButtonRenderActionColumn extends ButtonActionPanel implements TableCellRenderer {
 	private String actionName;

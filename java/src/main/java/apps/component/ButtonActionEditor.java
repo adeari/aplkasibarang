@@ -9,8 +9,6 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
 import aps.controller.BarangTablePanel;
-import lancarjaya.component.ButtonActionPanel;
-import lancarjaya.component.ButtonK;
 
 public class ButtonActionEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;

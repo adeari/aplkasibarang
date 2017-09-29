@@ -19,7 +19,6 @@ import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.MaskFormatter;
 
-import lancarjaya.component.DateLabelFormatter;
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
 
@@ -86,7 +85,7 @@ public class DatePicker extends JDatePickerImpl {
 					button.addActionListener(actionListener);
 				}
 				button.setText("");
-				button.setIcon(new ImageIcon(getClass().getResource("/lancarjaya/icons/date.png")));
+				button.setIcon(new ImageIcon(getClass().getResource("/apps/icons/date.png")));
 				button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				break;
 			}

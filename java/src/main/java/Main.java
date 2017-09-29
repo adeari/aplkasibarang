@@ -1,118 +1,87 @@
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.HeadlessException;
+import java.awt.SplashScreen;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JWindow;
+import javax.swing.Timer;
 
-import apps.component.MenuItem;
-import aps.controller.BarangFormPanel;
-import aps.controller.BarangTablePanel;
-import aps.controller.GedungFormPanel;
-import aps.controller.RakFormPanel;
-import aps.controller.RuangFormPanel;
-import lancarjaya.component.Menu;
-import lancarjaya.component.MenuBar;
- 
-public class Main {
-	private static GedungFormPanel gedungFormPanel;
-	private static RuangFormPanel ruangFormPanel;
-	private static RakFormPanel rakFormPanel;
-	private static BarangFormPanel barangFormPanel;
-	private static BarangTablePanel barangTablePanel;
-	private static JPanel panel;
-	
+import org.hibernate.Session;
+
+import aps.controller.HibernateUtil;
+import aps.controller.MainForm;
+
+public class Main extends JWindow {
+	private static final long serialVersionUID = 1L;
+	static boolean isRegistered;
+    private static JProgressBar progressBar = new JProgressBar();
+    private static Main execute;
+    private static int count;
+    private static Timer timer1;
+    private static Session session;
+
+    public Main() {
+        Container container = getContentPane();
+        container.setLayout(null);
+
+        JPanel panel = new JPanel();
+        panel.setBorder(new javax.swing.border.EtchedBorder());
+        panel.setBackground(new Color(255, 255, 255));
+        panel.setBounds(10, 10, 348, 200);
+        panel.setLayout(null);
+        container.add(panel);
+        
+        JLabel label = new JLabel("Aplikasi Barang");
+        label.setFont(new Font("Verdana", Font.BOLD, 18));
+        label.setBounds(0, 0, 350, 30);
+        label.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(label);
+
+        label = new JLabel("");
+        label.setIcon(new ImageIcon(getClass().getResource("/apps/icons/barang.jpg")));
+        label.setBounds(0, 30, 350, 170);
+        label.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(label);
+
+        progressBar.setMaximum(100);
+        progressBar.setBounds(55, 180, 250, 15);
+        container.add(progressBar);
+        loadProgressBar();
+        setSize(370, 215);
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    private void loadProgressBar() {
+        timer1 = new Timer(50, new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            	count++;
+                progressBar.setValue(count);
+                if (count >= progressBar.getMaximum()) {
+                	count = 1;
+                }
+                if (session != null && session.isOpen()) {
+            		session.close();
+            		execute.setVisible(false);
+            		new MainForm();
+                    timer1.stop();
+                    timer1 = null;
+                    execute = null;
+            	}
+            }
+        });
+        timer1.start();
+    }
+
     public static void main(String[] args) {
-    	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-    	JFrame frame = new JFrame("Aplikasi Barang");
-    	frame.setPreferredSize(dimension);
-    	frame.setSize(dimension);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setState(Frame.MAXIMIZED_BOTH);
-        panel = new JPanel();
-        panel.setPreferredSize(frame.getPreferredSize());
-        
-        ruangFormPanel = new RuangFormPanel(panel);
-        panel.add(ruangFormPanel);
-        
-        gedungFormPanel = new GedungFormPanel(panel);
-        panel.add(gedungFormPanel);
-        
-        rakFormPanel = new RakFormPanel(panel);
-        panel.add(rakFormPanel);
-        
-        barangTablePanel = new BarangTablePanel(panel);
-        panel.add(barangTablePanel);
-        
-        barangFormPanel = new BarangFormPanel(panel);
-        panel.add(barangFormPanel);
-        
-        frame.add(panel);
-        
-        MenuBar menubar = new MenuBar();
-    	Menu menu = new Menu("M e n u");
-    	menubar.add(menu);
-    	
-    	MenuItem tambahGedung = new MenuItem("Tambah gedung");
-    	tambahGedung.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				closesss();
-				gedungFormPanel.setTambah();
-			}
-		});
-    	menu.add(tambahGedung);
-    	
-    	MenuItem tambahRuang = new MenuItem("Tambah ruang");
-    	tambahRuang.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			closesss();
-    			ruangFormPanel.setTambah();
-    		}
-    	});
-    	menu.add(tambahRuang);
-    	
-    	MenuItem tambahRak = new MenuItem("Tambah rak");
-    	tambahRak.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			closesss();
-    			rakFormPanel.setTambah();
-    		}
-    	});
-    	menu.add(tambahRak);
-    	
-    	MenuItem tambahBarang = new MenuItem("Tambah Barang");
-    	tambahBarang.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			closesss();
-    			barangFormPanel.setTambah();
-    		}
-    	});
-    	menu.add(tambahBarang);
-    	
-    	MenuItem barangTable = new MenuItem("Data Barang");
-    	barangTable.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			closesss();
-    			barangTablePanel.view();
-    		}
-    	});
-    	menu.add(barangTable);
-    	
-    	frame.setJMenuBar(menubar);
-        frame.pack();
-        frame.setVisible(true);
-        
-        closesss();
+        execute = new Main();
+        session = HibernateUtil.getSessionFactory().openSession();
     }
-    
-    private static void closesss() {
-    	ruangFormPanel.setVisible(false);
-    	gedungFormPanel.setVisible(false);
-    	rakFormPanel.setVisible(false);
-    	barangFormPanel.setVisible(false);
-    	barangTablePanel.setVisible(false);
-    }
-}
+};

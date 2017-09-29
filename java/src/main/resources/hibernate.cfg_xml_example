@@ -2,9 +2,9 @@
 <hibernate-configuration>
   <session-factory>
     <property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
-    <property name="hibernate.connection.url">jdbc:hsqldb:file:C:\apps\thedata.db</property>
-    <property name="hibernate.connection.username">dfrewr353</property>
-    <property name="hibernate.connection.password">dfsereer343</property>
+    <property name="hibernate.connection.url">jdbc:hsqldb:file:/home/ade/Documents/proyek/lancarjaya/java/src/main/resources/thedata.db</property>
+    <property name="hibernate.connection.username">qiana</property>
+    <property name="hibernate.connection.password">ikGERevgert974trt</property>
     <property name="hibernate.connection.pool_size">10</property>
     <property name="show_sql">false</property>
     <property name="dialect">org.hibernate.dialect.HSQLDialect</property>

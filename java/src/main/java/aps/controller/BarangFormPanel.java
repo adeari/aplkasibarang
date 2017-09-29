@@ -21,14 +21,13 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import apps.component.ButtonK;
+import apps.component.Combobox;
 import apps.component.LabelK;
 import apps.component.TextFieldK;
 import apps.tables.Barang;
 import apps.tables.Gedung;
 import apps.tables.Rak;
 import apps.tables.Ruang;
-import lancarjaya.component.Combobox;
-import lancarjaya.controller.HibernateUtil;
 
 public class BarangFormPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
