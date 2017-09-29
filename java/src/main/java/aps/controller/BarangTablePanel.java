@@ -90,7 +90,12 @@ public class BarangTablePanel extends JPanel {
 		add(separator);
 		
 		ButtonK addButtonK = new ButtonK("Tambah Barang");
-		addButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/add.png")));
+		addButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
+		addButtonK.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			mainForm.tambahBarang();
+    		}
+    	});
 		add(addButtonK);
 		
 		predicates = new ArrayList<Predicate>();

@@ -97,8 +97,7 @@ public class MainForm {
     	MenuItem tambahBarang = new MenuItem("Tambah Barang");
     	tambahBarang.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
-    			closesss();
-    			barangFormPanel.setTambah();
+    			tambahBarang();
     		}
     	});
     	menu.add(tambahBarang);
@@ -126,5 +125,9 @@ public class MainForm {
     	barangFormPanel.setVisible(false);
     	barangTablePanel.setVisible(false);
     	rakTablePanel.setVisible(false);
+    }
+    public void tambahBarang() {
+    	closesss();
+		barangFormPanel.setTambah();
     }
 }
