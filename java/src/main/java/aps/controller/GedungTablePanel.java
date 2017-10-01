@@ -16,13 +16,12 @@ import java.util.Vector;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -32,6 +31,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import apps.component.ButtonActionEditor;
 import apps.component.ButtonK;
@@ -42,13 +42,11 @@ import apps.component.RowNumberRenderer;
 import apps.component.TableK;
 import apps.component.TextFieldK;
 import apps.tables.Gedung;
-import apps.tables.Rak;
-import apps.tables.Ruang;
 
-public class RakTablePanel extends JPanel {
+public class GedungTablePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private LabelK titel;
-	private RakTablePanel barangTablePanel;
+	private GedungTablePanel gedungTablePanel;
 	private MainForm mainForm;
 	private AbstractTableModel tableModel;
 	private Vector<Object> dataini;
@@ -67,10 +65,10 @@ public class RakTablePanel extends JPanel {
 	private String kolom[];
 	private int pageSize;
 
-	public RakTablePanel(JPanel jPanel, MainForm mainForm1) {
+	public GedungTablePanel(JPanel jPanel, MainForm mainForm1) {
 		super();
 		mainForm = mainForm1;
-		barangTablePanel = this;
+		gedungTablePanel = this;
 		int width = Double.valueOf(jPanel.getPreferredSize().getWidth()).intValue() - 20;
 		int height = Double.valueOf(jPanel.getPreferredSize().getHeight()).intValue() - 110;
 		
@@ -78,7 +76,7 @@ public class RakTablePanel extends JPanel {
 		FlowLayout flowLayout = new FlowLayout(FlowLayout.LEADING);
 		flowLayout.setHgap(1);
 		setLayout(flowLayout);
-		titel = new LabelK("Data rak");
+		titel = new LabelK("Data gedung");
 		titel.setFont(new Font("Arial", Font.BOLD, 50));
 		add(titel);
 
@@ -87,18 +85,18 @@ public class RakTablePanel extends JPanel {
 		separator.setPreferredSize(separator.getSize());
 		add(separator);
 		
-		ButtonK addButtonK = new ButtonK("Tambah Barang");
+		ButtonK addButtonK = new ButtonK("Tambah gedung");
 		addButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
 		addButtonK.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
-    			mainForm.tambahRak();
+    			mainForm.tambahGedung();
     		}
     	});
 		add(addButtonK);
 		
 		predicates = new ArrayList<Predicate>();
-		kolom = new String[]{"", "Rak", "Gedung", "Ruang", " "};
-		filters = new String[] {"", "", "", "", ""};
+		kolom = new String[]{"", "Gedung", "id", " "};
+		filters = new String[] {"", "", "", ""};
 		dataini = new Vector<Object>();
 		tableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -153,21 +151,25 @@ public class RakTablePanel extends JPanel {
 		tableColumn.setMinWidth(50);
 		tableColumn.setMaxWidth(50);
 		tableColumn.setCellRenderer(new RowNumberRenderer());
-		int widthColumns = width / kolom.length + 57;
-		tableColumn = table.getColumn("Rak");
-		tableColumn.setMinWidth(widthColumns);
+		int widthColumns = (width / kolom.length) + 57;
 		tableColumn = table.getColumn("Gedung");
 		tableColumn.setMinWidth(widthColumns);
-		tableColumn = table.getColumn("Ruang");
-		tableColumn.setMinWidth(widthColumns);
+		
 		tableColumn = table.getColumn(" ");
 		tableColumn.setMinWidth(130);
-		tableColumn.setCellRenderer(new ButtonRenderActionColumn("rak", barangTablePanel));
-		tableColumn.setCellEditor(new ButtonActionEditor("rak", barangTablePanel));
+		tableColumn.setCellRenderer(new ButtonRenderActionColumn("gedung", gedungTablePanel));
+		tableColumn.setCellEditor(new ButtonActionEditor("gedung", gedungTablePanel));
+		
+		tableColumn = table.getColumn("id");
+		tableColumn.setMinWidth(0);
+		tableColumn.setPreferredWidth(0);
+		tableColumn.setWidth(0);
+		tableColumn.setMaxWidth(0);
 		
 		JPanel rowPanel = new JPanel(flowLayout);
 		add(rowPanel);
 		rowOptions = new Combobox();
+		rowOptions.addItem("4");
 		rowOptions.addItem("50");
 		rowOptions.addItem("100");
 		rowOptions.addItem("200");
@@ -245,7 +247,7 @@ public class RakTablePanel extends JPanel {
 		rowPanel.add(displayPage);
 	}
 	public void view() {
-		barangTablePanel.setVisible(true);
+		gedungTablePanel.setVisible(true);
 		showData();
 	}
 	private class TableEditor extends DefaultCellEditor {
@@ -304,37 +306,27 @@ public class RakTablePanel extends JPanel {
 		predicates.clear();
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-		CriteriaQuery<Rak> criteriaQuery = criteriaBuilder.createQuery(Rak.class);
-		Root<Rak> root = criteriaQuery.from(Rak.class);
-		
-		Join<Rak, Ruang> ruangJoin = root.join("ruang", JoinType.LEFT);
-		Join<Ruang, Gedung> gedungJoin = ruangJoin.join("gedung", JoinType.LEFT);
+		CriteriaQuery<Gedung> criteriaQuery = criteriaBuilder.createQuery(Gedung.class);
+		Root<Gedung> root = criteriaQuery.from(Gedung.class);
 		
 		if (!filters[1].isEmpty()) {
-			predicates.add(criteriaBuilder.like(root.get("rak"), "%".concat(filters[1]).concat("%")));
-		}
-		if (!filters[2].isEmpty()) {
-			predicates.add(criteriaBuilder.like(gedungJoin.get("gedung"), "%".concat(filters[2]).concat("%")));
-		}
-		if (!filters[3].isEmpty()) {
-			predicates.add(criteriaBuilder.like(ruangJoin.get("ruang"), "%".concat(filters[3]).concat("%")));
+			predicates.add(criteriaBuilder.like(root.get("gedung"), "%".concat(filters[1]).concat("%")));
 		}
 		
 		predicatesr = predicates.toArray(new Predicate[] {});
 		criteriaQuery.select(root);
 		criteriaQuery.where(predicatesr);
-		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("rak")));
-		List<Rak> raks = null;
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("gedung")));
+		List<Gedung> gedungs = null;
 		if (rowOptions.getSelectedItem().equals("ALL")) {
-			raks = (List<Rak>) session.createQuery(criteriaQuery).getResultList();
+			gedungs = (List<Gedung>) session.createQuery(criteriaQuery).getResultList();
 		} else {
-			raks = (List<Rak>) session.createQuery(criteriaQuery).setFirstResult(firstResult)
+			gedungs = (List<Gedung>) session.createQuery(criteriaQuery).setFirstResult(firstResult)
 					.setMaxResults(limit).getResultList();
 		}
 
 		CriteriaQuery<Long> countCriteriaQuery = criteriaBuilder.createQuery(Long.class);
 		Root<?> entityCountRoot = countCriteriaQuery.from(criteriaQuery.getResultType());
-		entityCountRoot.join("ruang", JoinType.LEFT).join("gedung", JoinType.LEFT);
 		countCriteriaQuery.select(criteriaBuilder.count(entityCountRoot));
 		countCriteriaQuery.where(predicatesr);
 		Long dataSize = (Long) session.createQuery(countCriteriaQuery).getSingleResult();
@@ -378,22 +370,13 @@ public class RakTablePanel extends JPanel {
 		int row = firstResult;
 		String displaying  = "Displaying ".concat(String.valueOf(row + 1));
 		
-		for (Rak rak : raks) {
+		for (Gedung gedung : gedungs) {
 			row++;
 			rowData = new Vector<Object>();
 			rowData.addElement(row);
-			rowData.addElement(rak.getRak());
-			String gedung = "";
-			String ruang = "";
-			if (rak.getRuang() != null) {
-				ruang = rak.getRuang().getRuang();
-				if (rak.getRuang().getGedung() != null) {
-					gedung = rak.getRuang().getGedung().getGedung();
-				}
-			}
-			rowData.addElement(gedung);
-			rowData.addElement(ruang);
-			rowData.addElement(rak.getId());
+			rowData.addElement(gedung.getGedung());
+			rowData.addElement(gedung.getId());
+			rowData.addElement(dataini.size());
 			dataini.addElement(rowData);
 		}
 		displaying = displaying.concat(
@@ -408,6 +391,27 @@ public class RakTablePanel extends JPanel {
 			if (table.getValueAt(0, i) != null) {
 				filters[i] = table.getValueAt(0, i).toString();
 			}
+		}
+	}
+	
+	public void setEdit(int row) {
+		mainForm.closesss();
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		mainForm.getGedungFormPanel().setEdit((int) rowData.get(2));
+	}
+	public void removeDataById(int row) {
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		if (JOptionPane.showConfirmDialog(null,
+				"<html><span style='font-size:22px;'>Apakah Gedung <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			Gedung gedung = new Gedung();
+			gedung.setId((int) rowData.get(2));
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			Transaction transaction = session.beginTransaction();
+			session.delete(gedung);
+			transaction.commit();
+			session.close();
+			showData();
 		}
 	}
 }

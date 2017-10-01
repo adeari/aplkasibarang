@@ -1,14 +1,10 @@
 package apps.component;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
-
-import aps.controller.BarangTablePanel;
 
 public class ButtonActionEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;
@@ -30,23 +26,15 @@ public class ButtonActionEditor extends AbstractCellEditor implements TableCellE
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object valueIn, boolean isSelected, int row,
 			int column) {
-		if ("barang".equals(actionName) && row == 0) {
-			ButtonK searchButton = new ButtonK("Search");
-			searchButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					BarangTablePanel barangTablePanel = (BarangTablePanel) actionObject;
-					barangTablePanel.populteFilter();
-					barangTablePanel.showData();
-				}
-			});
-			return searchButton;
+		if (row == 0) {
+			return new SearchButton("Search", actionName, actionObject);
 		}
 		if (isSelected) {
 			theButtonPanel.setBackground(table.getSelectionBackground());
 		} else {
 			theButtonPanel.setBackground(table.getBackground());
 		}
-		theButtonPanel.setRow(row);
+		theButtonPanel.setRow((int) row);
 		return theButtonPanel;
 
 	}

@@ -395,7 +395,7 @@ public class BarangTablePanel extends JPanel {
 			rowData.addElement(barang.getGedung().getGedung());
 			rowData.addElement((barang.getRuang() == null) ? "" : barang.getRuang().getRuang());
 			rowData.addElement((barang.getRak() == null) ? "" : barang.getRak().getRak());
-			rowData.addElement(dataini.size());
+			rowData.addElement(barang.getId());
 			dataini.addElement(rowData);
 		}
 		displaying = displaying.concat(

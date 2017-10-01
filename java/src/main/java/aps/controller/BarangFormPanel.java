@@ -54,8 +54,10 @@ public class BarangFormPanel extends JPanel {
 
 	private ActionListener gedungComboboxActionListener;
 	private ActionListener ruangComboboxActionListener;
+	private MainForm mainForm;
 
-	public BarangFormPanel(JPanel jPanel) {
+	public BarangFormPanel(JPanel jPanel, MainForm mainForm1) {
+		mainForm = mainForm1;
 		int width = Double.valueOf(jPanel.getPreferredSize().getWidth()).intValue() - 20;
 		setPreferredSize(new Dimension(width, 600));
 		FlowLayout flowLayout = new FlowLayout(FlowLayout.LEADING);
@@ -159,6 +161,12 @@ public class BarangFormPanel extends JPanel {
 		add(resetButton);
 		tabelButton = new ButtonK("Tabel");
 		tabelButton.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tabel.png")));
+		tabelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				mainForm.viewBarangTable();
+			}
+		});
 		add(tabelButton);
 		labelStatus = new LabelK("");
 		add(labelStatus);

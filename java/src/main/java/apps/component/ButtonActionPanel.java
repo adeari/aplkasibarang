@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+import aps.controller.GedungTablePanel;
+
 
 public class ButtonActionPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -26,13 +28,9 @@ public class ButtonActionPanel extends JPanel {
 		editButton.setIcon(new ImageIcon(getClass().getResource("/apps/icons/edit.png")));
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				/*if ("jmlContainerinJobPanel".equals(handle)) {
-					((JobPanel) tableAccess).setEditFormJmlContainer(row);
-				} else if ("dataContainer".equals(handle)) {
-					((JobPanel) tableAccess).setEditFormContainer(row);
-				} else if ("jobTable".equals(handle)) {
-					((JobPanel) tableAccess).setEditFormJob(row);
-				} */
+				if ("gedung".equals(handle)) {
+					((GedungTablePanel) tableAccess).setEdit(row);
+				}
 			}
 		});
 		ButtonK deleteButton = new ButtonK("");
@@ -40,14 +38,9 @@ public class ButtonActionPanel extends JPanel {
 		deleteButton.setBackground(Color.RED);
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				/*if ("jmlContainerinJobPanel".equals(handle)) {
-					((JobPanel) tableAccess).removeRowTotalContainers(row);
-				} else if ("dataContainer".equals(handle)) {
-					((JobPanel) tableAccess).removeRowContainers(row);
-				} else if ("jobTable".equals(handle)) {
-					JobPanel jobPanel = (JobPanel) tableAccess;
-					jobPanel.deleteJobByRow(row);
-				}*/
+				if ("gedung".equals(handle)) {
+					((GedungTablePanel) tableAccess).removeDataById(row);
+				}
 			}
 		});
 		setOpaque(true);

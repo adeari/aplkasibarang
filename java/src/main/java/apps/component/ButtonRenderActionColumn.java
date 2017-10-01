@@ -1,13 +1,9 @@
 package apps.component;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-
-import aps.controller.BarangTablePanel;
 
 public class ButtonRenderActionColumn extends ButtonActionPanel implements TableCellRenderer {
 	private String actionName;
@@ -24,16 +20,8 @@ public class ButtonRenderActionColumn extends ButtonActionPanel implements Table
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object valueIn, boolean isSelected, boolean hasFocus, int row,
 			int column) {
-		if ("barang".equals(actionName) && row == 0) {
-			ButtonK searchButton = new ButtonK("Search");
-			searchButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					BarangTablePanel barangTablePanel = (BarangTablePanel) actionObject;
-					barangTablePanel.populteFilter();
-					barangTablePanel.showData();
-				}
-			});
-			return searchButton;
+		if (row == 0) {
+			return new SearchButton("Search", actionName, actionObject);
 		}
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
