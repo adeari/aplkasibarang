@@ -5,12 +5,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -32,9 +34,10 @@ public class GedungFormPanel extends JPanel {
 	private ButtonK simpanButton, resetButton, tabelButton;
 	private LabelK labelStatus;
 	private Timer timer;
-	private Gedung valueEditted;
 	private MainForm mainForm;
-	private Integer idEditted; 
+	private Integer idEditted;
+	private List<Predicate> predicates;
+	private Predicate[] predicatesr;
 	
 	public GedungFormPanel(JPanel jPanel, MainForm mainForm1) {
 		mainForm = mainForm1;
@@ -46,6 +49,7 @@ public class GedungFormPanel extends JPanel {
 		titel = new LabelK("Form gedung");
 		titel.setFont(new Font("Arial", Font.BOLD, 50));
 		add(titel);
+		predicates = new ArrayList<Predicate>();
 		
 		JSeparator separator = new JSeparator();
 		separator.setSize(new Dimension(width, 20));
@@ -69,6 +73,12 @@ public class GedungFormPanel extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				if (namaGedung.getText().isEmpty()) {
 					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Isi nama gedung</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaGedung.requestFocus();
+					return;
+				}
+				if (isGedungWithSameNameExist(namaGedung.getText(), idEditted)) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Gedung dengan nama <font style=\"color:blue;\">".concat(namaGedung.getText()).concat("</font> telah terdaftar</span>"),
 							"Perhatian", JOptionPane.ERROR_MESSAGE);
 					namaGedung.requestFocus();
 					return;
@@ -137,6 +147,7 @@ public class GedungFormPanel extends JPanel {
 		for (Gedung gedung : gedungs) {
 			namaGedung.setText(gedung.getGedung());
 		}
+		session.close();
 		setVisible(true);
 	}
 	
@@ -145,7 +156,7 @@ public class GedungFormPanel extends JPanel {
 		labelStatus.setText("Data tersimpan");
 		timer = new Timer();
 		timer.schedule(new RemindTask(), 3 * 1000, 3 * 1000);
-		if (valueEditted == null) {
+		if (idEditted == null) {
 			resetButton.doClick();
 		}
 	}
@@ -157,5 +168,28 @@ public class GedungFormPanel extends JPanel {
 				timer = null;
 			}
 		}
+	}
+	
+	private boolean isGedungWithSameNameExist(String namagedung, Integer id) {
+		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Gedung.class)));
+		
+		Root<Gedung> root = criteriaQuerycheck.from(Gedung.class);
+		predicates.add(criteriaBuilderCheck.equal(root.get("gedung"), namagedung));
+		if (id != null) {
+			predicates.add(criteriaBuilderCheck.notEqual(root.get("id"), id));
+		}
+		predicatesr = predicates.toArray(new Predicate[] {});
+		criteriaQuerycheck.where(predicatesr);
+		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
+		sessionCheck.close();
+		if (dataSize > 0) {
+			return true;
+		}
+		predicates.clear();
+		
+		return false;
 	}
 }

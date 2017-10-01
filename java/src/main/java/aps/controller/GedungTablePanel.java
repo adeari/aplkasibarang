@@ -42,6 +42,7 @@ import apps.component.RowNumberRenderer;
 import apps.component.TableK;
 import apps.component.TextFieldK;
 import apps.tables.Gedung;
+import apps.tables.Ruang;
 
 public class GedungTablePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -401,17 +402,50 @@ public class GedungTablePanel extends JPanel {
 	}
 	public void removeDataById(int row) {
 		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
-		if (JOptionPane.showConfirmDialog(null,
+		Gedung gedung = getGedungById((int) rowData.get(2));
+		if (isRakExistByGedung(gedung)) {
+			JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Gedung tidak dihapus karena masih ada ruangnya</span>", "Perhatian", JOptionPane.ERROR_MESSAGE);
+		} else if (JOptionPane.showConfirmDialog(null,
 				"<html><span style='font-size:22px;'>Apakah Gedung <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
 				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-			Gedung gedung = new Gedung();
-			gedung.setId((int) rowData.get(2));
-			Session session = HibernateUtil.getSessionFactory().openSession();
-			Transaction transaction = session.beginTransaction();
-			session.delete(gedung);
+			Session sesson = HibernateUtil.getSessionFactory().openSession();
+			Transaction transaction = sesson.beginTransaction();
+			sesson.delete(gedung);
 			transaction.commit();
-			session.close();
+			sesson.close();
 			showData();
 		}
+	}
+	
+	private Gedung getGedungById(int id) {
+		Gedung gedung = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		CriteriaQuery<Gedung> criteriaQuery = criteriaBuilder.createQuery(Gedung.class);
+		Root<Gedung> root = criteriaQuery.from(Gedung.class);
+		criteriaQuery.select(root);
+		criteriaQuery.where(criteriaBuilder.equal(root.get("id"), id));
+		List<Gedung> gedungs = (List<Gedung>) session.createQuery(criteriaQuery).getResultList();
+		for (Gedung gedungLoop : gedungs) {
+			gedung = gedungLoop;
+		}
+		session.close();
+		return gedung;
+	}
+	
+	private boolean isRakExistByGedung(Gedung gedung) {
+		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Ruang.class)));
+		
+		Root<Ruang> root = criteriaQuerycheck.from(Ruang.class);
+		criteriaQuerycheck.where(criteriaBuilderCheck.equal(root.get("gedung"), gedung));
+		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
+		sessionCheck.close();
+		if (dataSize > 0) {
+			return true;
+		}
+		return false;
 	}
 }
