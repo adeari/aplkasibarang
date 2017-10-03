@@ -23,6 +23,7 @@ import javax.persistence.criteria.Root;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -32,6 +33,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import apps.component.ButtonActionEditor;
 import apps.component.ButtonK;
@@ -97,8 +99,8 @@ public class RuangTablePanel extends JPanel {
 		add(addButtonK);
 		
 		predicates = new ArrayList<Predicate>();
-		kolom = new String[]{"", "Ruang", "Gedung", " "};
-		filters = new String[] {"", "", "", ""};
+		kolom = new String[]{"", "Ruang", "Gedung", "id", " "};
+		filters = new String[] {"", "", "", "", ""};
 		dataini = new Vector<Object>();
 		tableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -153,7 +155,7 @@ public class RuangTablePanel extends JPanel {
 		tableColumn.setMinWidth(50);
 		tableColumn.setMaxWidth(50);
 		tableColumn.setCellRenderer(new RowNumberRenderer());
-		int widthColumns = width / kolom.length + 57;
+		int widthColumns = (width / (kolom.length - 1)) + 57;
 		tableColumn = table.getColumn("Ruang");
 		tableColumn.setMinWidth(widthColumns);
 		tableColumn = table.getColumn("Gedung");
@@ -162,6 +164,12 @@ public class RuangTablePanel extends JPanel {
 		tableColumn.setMinWidth(130);
 		tableColumn.setCellRenderer(new ButtonRenderActionColumn("ruang", ruangTablePanel));
 		tableColumn.setCellEditor(new ButtonActionEditor("ruang", ruangTablePanel));
+		
+		tableColumn = table.getColumn("id");
+		tableColumn.setMinWidth(0);
+		tableColumn.setPreferredWidth(0);
+		tableColumn.setWidth(0);
+		tableColumn.setMaxWidth(0);
 		
 		JPanel rowPanel = new JPanel(flowLayout);
 		add(rowPanel);
@@ -379,6 +387,7 @@ public class RuangTablePanel extends JPanel {
 			rowData.addElement(ruang.getRuang());
 			rowData.addElement(ruang.getGedung().getGedung());
 			rowData.addElement(ruang.getId());
+			rowData.addElement(dataini.size());
 			dataini.addElement(rowData);
 		}
 		displaying = displaying.concat(
@@ -394,5 +403,61 @@ public class RuangTablePanel extends JPanel {
 				filters[i] = table.getValueAt(0, i).toString();
 			}
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void setEdit(int row) {
+		mainForm.closesss();
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		mainForm.getRuangFormPanel().setEdit((int) rowData.get(2));
+	}
+	@SuppressWarnings("unchecked")
+	public void removeDataById(int row) {
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		Ruang ruang = getRuangById((int) rowData.get(2));
+		if (isRakExistByGedung(ruang)) {
+			JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Ruang tidak dihapus karena masih ada raknya</span>", "Perhatian", JOptionPane.ERROR_MESSAGE);
+		} else if (JOptionPane.showConfirmDialog(null,
+				"<html><span style='font-size:22px;'>Apakah Ruang <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			Session sesson = HibernateUtil.getSessionFactory().openSession();
+			Transaction transaction = sesson.beginTransaction();
+			sesson.delete(ruang);
+			transaction.commit();
+			sesson.close();
+			showData();
+		}
+	}
+	
+	private Ruang getRuangById(int id) {
+		Ruang ruang = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		CriteriaQuery<Ruang> criteriaQuery = criteriaBuilder.createQuery(Ruang.class);
+		Root<Ruang> root = criteriaQuery.from(Ruang.class);
+		criteriaQuery.select(root);
+		criteriaQuery.where(criteriaBuilder.equal(root.get("id"), id));
+		List<Ruang> ruangs = (List<Ruang>) session.createQuery(criteriaQuery).getResultList();
+		for (Ruang ruangLoop : ruangs) {
+			ruang = ruangLoop;
+		}
+		session.close();
+		return ruang;
+	}
+	
+	private boolean isRakExistByGedung(Ruang ruang) {
+		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Rak.class)));
+		
+		Root<Rak> root = criteriaQuerycheck.from(Rak.class);
+		criteriaQuerycheck.where(criteriaBuilderCheck.equal(root.get("ruang"), ruang));
+		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
+		sessionCheck.close();
+		if (dataSize > 0) {
+			return true;
+		}
+		return false;
 	}
 }

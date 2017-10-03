@@ -5,12 +5,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -30,21 +32,16 @@ import apps.tables.Ruang;
 public class RuangFormPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private LabelK titel;
-	
 	private TextFieldK namaRuang;
-	
 	private ButtonK simpanButton, resetButton, tabelButton;
-	
 	private LabelK labelStatus;
-	
 	private Timer timer;
-	
-	private Gedung valueEditted;
-	
-	
 	private Combobox gedungCombobox;
 	private List<Gedung> gedungValues;
 	private MainForm mainForm;
+	private Integer idEditted;
+	private List<Predicate> predicates;
+	private Predicate[] predicatesr;
 
 	public RuangFormPanel(JPanel jPanel, MainForm mainForm1) {
 		mainForm = mainForm1;
@@ -56,6 +53,7 @@ public class RuangFormPanel extends JPanel {
 		titel = new LabelK("Form gedung");
 		titel.setFont(new Font("Arial", Font.BOLD, 50));
 		add(titel);
+		predicates = new ArrayList<Predicate>();
 		
 		JSeparator separator = new JSeparator();
 		separator.setSize(new Dimension(width, 20));
@@ -134,7 +132,29 @@ public class RuangFormPanel extends JPanel {
 		if (refreshGedung()) {
 			titel.setText("Tambah ruang");
 			setVisible(true);
+			idEditted = null;
 		}
+	}
+	
+	public void setEdit(int id) {
+		titel.setText("Edit ruang");
+		resetButton.doClick();
+		
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		CriteriaQuery<Ruang> criteriaQuery = criteriaBuilder.createQuery(Ruang.class);
+		Root<Ruang> root = criteriaQuery.from(Ruang.class);
+		
+		criteriaQuery.select(root);
+		idEditted = id;
+		criteriaQuery.where(criteriaBuilder.equal(root.get("id"), idEditted));
+		List<Ruang> ruangs = (List<Ruang>) session.createQuery(criteriaQuery).getResultList();
+		for (Ruang ruang : ruangs) {
+			gedungCombobox.setSelectedIndex(gedungValues.indexOf(ruang.getGedung().getId()));
+			namaRuang.setText(ruang.getRuang());
+		}
+		session.close();
+		setVisible(true);
 	}
 	
 	private boolean refreshGedung() {
@@ -169,7 +189,7 @@ public class RuangFormPanel extends JPanel {
 		labelStatus.setText("Data tersimpan");
 		timer = new Timer();
 		timer.schedule(new RemindTask(), 3 * 1000, 3 * 1000);
-		if (valueEditted == null) {
+		if (idEditted == null) {
 			resetButton.doClick();
 		}
 	}
@@ -181,5 +201,29 @@ public class RuangFormPanel extends JPanel {
 				timer = null;
 			}
 		}
+	}
+	
+	private boolean isRuangWithSameNameExist(String namaruang, Integer id) {
+		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Ruang.class)));
+		
+		Gedung gedung = gedungValues.get(gedungCombobox.getSelectedIndex());
+		Root<Ruang> root = criteriaQuerycheck.from(Ruang.class);
+		predicates.add(criteriaBuilderCheck.equal(root.get("ruang"), namaruang));
+		predicates.add(criteriaBuilderCheck.equal(root.get("gedung"), gedung));
+		if (id != null) {
+			predicates.add(criteriaBuilderCheck.notEqual(root.get("id"), id));
+		}
+		predicatesr = predicates.toArray(new Predicate[] {});
+		criteriaQuerycheck.where(predicatesr);
+		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
+		sessionCheck.close();
+		predicates.clear();
+		if (dataSize > 0) {
+			return true;
+		}
+		return false;
 	}
 }

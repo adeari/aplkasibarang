@@ -152,7 +152,7 @@ public class GedungTablePanel extends JPanel {
 		tableColumn.setMinWidth(50);
 		tableColumn.setMaxWidth(50);
 		tableColumn.setCellRenderer(new RowNumberRenderer());
-		int widthColumns = (width / kolom.length) + 57;
+		int widthColumns = (width / (kolom.length - 1)) + 57;
 		tableColumn = table.getColumn("Gedung");
 		tableColumn.setMinWidth(widthColumns);
 		
@@ -170,7 +170,6 @@ public class GedungTablePanel extends JPanel {
 		JPanel rowPanel = new JPanel(flowLayout);
 		add(rowPanel);
 		rowOptions = new Combobox();
-		rowOptions.addItem("4");
 		rowOptions.addItem("50");
 		rowOptions.addItem("100");
 		rowOptions.addItem("200");
@@ -395,15 +394,17 @@ public class GedungTablePanel extends JPanel {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setEdit(int row) {
 		mainForm.closesss();
 		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
 		mainForm.getGedungFormPanel().setEdit((int) rowData.get(2));
 	}
+	@SuppressWarnings("unchecked")
 	public void removeDataById(int row) {
 		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
 		Gedung gedung = getGedungById((int) rowData.get(2));
-		if (isRakExistByGedung(gedung)) {
+		if (isRuangExistByGedung(gedung)) {
 			JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Gedung tidak dihapus karena masih ada ruangnya</span>", "Perhatian", JOptionPane.ERROR_MESSAGE);
 		} else if (JOptionPane.showConfirmDialog(null,
 				"<html><span style='font-size:22px;'>Apakah Gedung <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
@@ -433,7 +434,7 @@ public class GedungTablePanel extends JPanel {
 		return gedung;
 	}
 	
-	private boolean isRakExistByGedung(Gedung gedung) {
+	private boolean isRuangExistByGedung(Gedung gedung) {
 		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
 		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
 		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);

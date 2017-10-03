@@ -84,7 +84,6 @@ public class GedungFormPanel extends JPanel {
 					return;
 				}
 				Gedung gedung = new Gedung();
-				
 				gedung.setGedung(namaGedung.getText());
 				
 				Session session = HibernateUtil.getSessionFactory().openSession();
@@ -185,11 +184,10 @@ public class GedungFormPanel extends JPanel {
 		criteriaQuerycheck.where(predicatesr);
 		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
 		sessionCheck.close();
+		predicates.clear();
 		if (dataSize > 0) {
 			return true;
 		}
-		predicates.clear();
-		
 		return false;
 	}
 }
