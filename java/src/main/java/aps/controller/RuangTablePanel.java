@@ -397,7 +397,7 @@ public class RuangTablePanel extends JPanel {
 		predicatesr = null;
 		tableModel.fireTableDataChanged();
 	}
-	public void populteFilter() {
+	public void populateFilter() {
 		for (int i = 0; i < filters.length; i++) {
 			if (table.getValueAt(0, i) != null) {
 				filters[i] = table.getValueAt(0, i).toString();
@@ -409,22 +409,22 @@ public class RuangTablePanel extends JPanel {
 	public void setEdit(int row) {
 		mainForm.closesss();
 		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
-		mainForm.getRuangFormPanel().setEdit((int) rowData.get(2));
+		mainForm.getRuangFormPanel().setEdit((int) rowData.get(3));
 	}
 	@SuppressWarnings("unchecked")
 	public void removeDataById(int row) {
 		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
-		Ruang ruang = getRuangById((int) rowData.get(2));
+		Ruang ruang = getRuangById((int) rowData.get(3));
 		if (isRakExistByGedung(ruang)) {
 			JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Ruang tidak dihapus karena masih ada raknya</span>", "Perhatian", JOptionPane.ERROR_MESSAGE);
 		} else if (JOptionPane.showConfirmDialog(null,
 				"<html><span style='font-size:22px;'>Apakah Ruang <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
 				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-			Session sesson = HibernateUtil.getSessionFactory().openSession();
-			Transaction transaction = sesson.beginTransaction();
-			sesson.delete(ruang);
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			Transaction transaction = session.beginTransaction();
+			session.delete(ruang);
 			transaction.commit();
-			sesson.close();
+			session.close();
 			showData();
 		}
 	}

@@ -405,7 +405,7 @@ public class BarangTablePanel extends JPanel {
 		predicatesr = null;
 		tableModel.fireTableDataChanged();
 	}
-	public void populteFilter() {
+	public void populateFilter() {
 		for (int i = 0; i < filters.length; i++) {
 			if (table.getValueAt(0, i) != null) {
 				filters[i] = table.getValueAt(0, i).toString();

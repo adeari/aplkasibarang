@@ -92,13 +92,27 @@ public class RuangFormPanel extends JPanel {
 					return;
 				}
 				
+				if (isRuangWithSameNameExist(namaRuang.getText(), idEditted)) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Ruang dengan nama <font style=\"color:blue;\">".concat(namaRuang.getText()).concat("</font> telah terdaftar</span>"),
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaRuang.requestFocus();
+					return;
+				}
+				
 				Ruang ruang = new Ruang();
 				ruang.setRuang(namaRuang.getText());
 				ruang.setGedung(gedungValues.get(gedungCombobox.getSelectedIndex()));
 				
 				Session session = HibernateUtil.getSessionFactory().openSession();
 				Transaction transaction = session.beginTransaction();
-				session.save(ruang);
+				
+				if (idEditted == null) {
+					session.save(ruang);
+				} else {
+					ruang.setId(idEditted);
+					session.update(ruang);
+				}
+				
 				transaction.commit();
 				session.close();
 				afterSaved();
@@ -137,24 +151,34 @@ public class RuangFormPanel extends JPanel {
 	}
 	
 	public void setEdit(int id) {
-		titel.setText("Edit ruang");
-		resetButton.doClick();
-		
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-		CriteriaQuery<Ruang> criteriaQuery = criteriaBuilder.createQuery(Ruang.class);
-		Root<Ruang> root = criteriaQuery.from(Ruang.class);
-		
-		criteriaQuery.select(root);
-		idEditted = id;
-		criteriaQuery.where(criteriaBuilder.equal(root.get("id"), idEditted));
-		List<Ruang> ruangs = (List<Ruang>) session.createQuery(criteriaQuery).getResultList();
-		for (Ruang ruang : ruangs) {
-			gedungCombobox.setSelectedIndex(gedungValues.indexOf(ruang.getGedung().getId()));
-			namaRuang.setText(ruang.getRuang());
+		if (refreshGedung()) {
+			titel.setText("Edit ruang");
+			resetButton.doClick();
+			
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+			CriteriaQuery<Ruang> criteriaQuery = criteriaBuilder.createQuery(Ruang.class);
+			Root<Ruang> root = criteriaQuery.from(Ruang.class);
+			
+			criteriaQuery.select(root);
+			idEditted = id;
+			criteriaQuery.where(criteriaBuilder.equal(root.get("id"), idEditted));
+			List<Ruang> ruangs = (List<Ruang>) session.createQuery(criteriaQuery).getResultList();
+			for (Ruang ruang : ruangs) {
+				int idGedung = ruang.getGedung().getId();
+				int i = 0;
+				for (Gedung gedung : gedungValues) {
+					if (gedung.getId() == idGedung) {
+						gedungCombobox.setSelectedIndex(i);
+						break;
+					}
+					i++;
+				}
+				namaRuang.setText(ruang.getRuang());
+			}
+			session.close();
+			setVisible(true);
 		}
-		session.close();
-		setVisible(true);
 	}
 	
 	private boolean refreshGedung() {

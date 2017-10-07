@@ -386,7 +386,7 @@ public class GedungTablePanel extends JPanel {
 		predicatesr = null;
 		tableModel.fireTableDataChanged();
 	}
-	public void populteFilter() {
+	public void populateFilter() {
 		for (int i = 0; i < filters.length; i++) {
 			if (table.getValueAt(0, i) != null) {
 				filters[i] = table.getValueAt(0, i).toString();
@@ -409,11 +409,11 @@ public class GedungTablePanel extends JPanel {
 		} else if (JOptionPane.showConfirmDialog(null,
 				"<html><span style='font-size:22px;'>Apakah Gedung <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
 				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-			Session sesson = HibernateUtil.getSessionFactory().openSession();
-			Transaction transaction = sesson.beginTransaction();
-			sesson.delete(gedung);
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			Transaction transaction = session.beginTransaction();
+			session.delete(gedung);
 			transaction.commit();
-			sesson.close();
+			session.close();
 			showData();
 		}
 	}

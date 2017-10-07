@@ -19,7 +19,7 @@ public class SearchButton extends ButtonK {
 			searchButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					BarangTablePanel barangTablePanel = (BarangTablePanel) actionObject;
-					barangTablePanel.populteFilter();
+					barangTablePanel.populateFilter();
 					barangTablePanel.showData();
 				}
 			});
@@ -27,7 +27,7 @@ public class SearchButton extends ButtonK {
 			searchButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					GedungTablePanel tabePanel = (GedungTablePanel) actionObject;
-					tabePanel.populteFilter();
+					tabePanel.populateFilter();
 					tabePanel.showData();
 				}
 			});
@@ -35,7 +35,7 @@ public class SearchButton extends ButtonK {
 			searchButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					RuangTablePanel tabePanel = (RuangTablePanel) actionObject;
-					tabePanel.populteFilter();
+					tabePanel.populateFilter();
 					tabePanel.showData();
 				}
 			});
@@ -43,7 +43,7 @@ public class SearchButton extends ButtonK {
 			searchButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					RakTablePanel tabePanel = (RakTablePanel) actionObject;
-					tabePanel.populteFilter();
+					tabePanel.populateFilter();
 					tabePanel.showData();
 				}
 			});

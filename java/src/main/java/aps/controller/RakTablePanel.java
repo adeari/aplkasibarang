@@ -23,6 +23,7 @@ import javax.persistence.criteria.Root;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -32,6 +33,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import apps.component.ButtonActionEditor;
 import apps.component.ButtonK;
@@ -41,6 +43,7 @@ import apps.component.LabelK;
 import apps.component.RowNumberRenderer;
 import apps.component.TableK;
 import apps.component.TextFieldK;
+import apps.tables.Barang;
 import apps.tables.Gedung;
 import apps.tables.Rak;
 import apps.tables.Ruang;
@@ -394,6 +397,7 @@ public class RakTablePanel extends JPanel {
 			rowData.addElement(gedung);
 			rowData.addElement(ruang);
 			rowData.addElement(rak.getId());
+			rowData.addElement(dataini.size());
 			dataini.addElement(rowData);
 		}
 		displaying = displaying.concat(
@@ -403,11 +407,67 @@ public class RakTablePanel extends JPanel {
 		predicatesr = null;
 		tableModel.fireTableDataChanged();
 	}
-	public void populteFilter() {
+	public void populateFilter() {
 		for (int i = 0; i < filters.length; i++) {
 			if (table.getValueAt(0, i) != null) {
 				filters[i] = table.getValueAt(0, i).toString();
 			}
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void setEdit(int row) {
+		mainForm.closesss();
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		mainForm.getRuangFormPanel().setEdit((int) rowData.get(3));
+	}
+	@SuppressWarnings("unchecked")
+	public void removeDataById(int row) {
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		Rak rak = getRakById((int) rowData.get(4));
+		if (isBarangExistByGedung(rak)) {
+			JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Rak tidak dihapus karena masih ada barangnya</span>", "Perhatian", JOptionPane.ERROR_MESSAGE);
+		} else if (JOptionPane.showConfirmDialog(null,
+				"<html><span style='font-size:22px;'>Apakah Rak <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			Transaction transaction = session.beginTransaction();
+			session.delete(rak);
+			transaction.commit();
+			session.close();
+			showData();
+		}
+	}
+	
+	private Rak getRakById(int id) {
+		Rak rak = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		CriteriaQuery<Rak> criteriaQuery = criteriaBuilder.createQuery(Rak.class);
+		Root<Rak> root = criteriaQuery.from(Rak.class);
+		criteriaQuery.select(root);
+		criteriaQuery.where(criteriaBuilder.equal(root.get("id"), id));
+		List<Rak> raks = (List<Rak>) session.createQuery(criteriaQuery).getResultList();
+		for (Rak rakLoop : raks) {
+			rak = rakLoop;
+		}
+		session.close();
+		return rak;
+	}
+	
+	private boolean isBarangExistByGedung(Rak rak) {
+		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Barang.class)));
+		
+		Root<Barang> root = criteriaQuerycheck.from(Barang.class);
+		criteriaQuerycheck.where(criteriaBuilderCheck.equal(root.get("rak"), rak));
+		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
+		sessionCheck.close();
+		if (dataSize > 0) {
+			return true;
+		}
+		return false;
 	}
 }
