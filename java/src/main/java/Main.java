@@ -3,6 +3,9 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -11,7 +14,9 @@ import javax.swing.JWindow;
 import javax.swing.Timer;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
+import apps.tables.Password;
 import aps.controller.HibernateUtil;
 import aps.controller.MainForm;
 
@@ -58,13 +63,27 @@ public class Main extends JWindow {
 
     private void loadProgressBar() {
         timer1 = new Timer(50, new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @SuppressWarnings("unused")
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
             	count++;
                 progressBar.setValue(count);
                 if (count >= progressBar.getMaximum()) {
                 	count = 1;
                 }
                 if (session != null && session.isOpen()) {
+                	CriteriaBuilder criteriaBuilderCheck = session.getCriteriaBuilder();
+            		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+            		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Password.class)));
+                	
+            		Root<Password> root = criteriaQuerycheck.from(Password.class);
+            		if ((Long) session.createQuery(criteriaQuerycheck).getSingleResult() == 0) {
+            			session.close();
+            			
+            			session = HibernateUtil.getSessionFactory().openSession();
+            			Transaction transaction = session.beginTransaction();
+            			session.save(new Password("admin"));
+            			transaction.commit();
+            		}
             		session.close();
             		execute.setVisible(false);
             		new MainForm();

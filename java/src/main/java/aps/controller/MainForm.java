@@ -1,5 +1,7 @@
 package aps.controller;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -7,6 +9,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 
 import apps.component.Menu;
 import apps.component.MenuBar;
@@ -21,8 +24,10 @@ public class MainForm {
 	private RakTablePanel rakTablePanel;
 	private RuangTablePanel ruangTablePanel;
 	private GedungTablePanel gedungTablePanel;
+	private LoginFormPanel loginFormPanel;
 	private JPanel panel;
 	private MainForm mainForm;
+	private Menu menu;
 	
     public MainForm() {
     	mainForm = this;
@@ -52,12 +57,52 @@ public class MainForm {
         panel.add(ruangTablePanel);
         gedungTablePanel = new GedungTablePanel(panel, mainForm);
         panel.add(gedungTablePanel);
+        loginFormPanel = new LoginFormPanel(panel, mainForm);
+        panel.add(loginFormPanel);
         
         frame.add(panel);
         
         MenuBar menubar = new MenuBar();
-    	Menu menu = new Menu("M e n u");
+        
+        Menu menuUser = new Menu("Menu");
+        menubar.add(menuUser);
+        
+        MenuItem loginAdmin = new MenuItem("Login Admin");
+    	loginAdmin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				loginFormPanel.setLogin();
+			}
+		});
+    	menuUser.add(loginAdmin);
+        
+        menuUser.add(new JSeparator());
+        MenuItem keluar = new MenuItem("Keluar");
+    	keluar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+    	menuUser.add(keluar);
+        
+    	menu = new Menu("Admin");
+    	menu.setForeground(Color.BLUE);
+    	menu.setVisible(false);
     	menubar.add(menu);
+    	
+    	MenuItem gantiPassword = new MenuItem("Ganti Password");
+    	gantiPassword.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    		}
+    	});
+    	menu.add(gantiPassword);
+    	
+    	MenuItem logoutAdmin = new MenuItem("Logout Admin");
+    	logoutAdmin.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    		}
+    	});
+    	menu.add(logoutAdmin);
+    	menu.add(new JSeparator());
     	
     	MenuItem tambahGedung = new MenuItem("Tambah gedung");
     	tambahGedung.addActionListener(new ActionListener() {
@@ -73,6 +118,8 @@ public class MainForm {
     		}
     	});
     	menu.add(gedungTable);
+    	
+    	menu.add(new JSeparator());
     	
     	MenuItem tambahRuang = new MenuItem("Tambah ruang");
     	tambahRuang.addActionListener(new ActionListener() {
@@ -90,6 +137,8 @@ public class MainForm {
     	});
     	menu.add(ruangTable);
     	
+    	menu.add(new JSeparator());
+    	
     	MenuItem tambahRak = new MenuItem("Tambah rak");
     	tambahRak.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
@@ -105,6 +154,8 @@ public class MainForm {
     		}
     	});
     	menu.add(rakTable);
+    	
+    	menu.add(new JSeparator());
     	
     	MenuItem tambahBarang = new MenuItem("Tambah Barang");
     	tambahBarang.addActionListener(new ActionListener() {
@@ -138,6 +189,7 @@ public class MainForm {
     	rakTablePanel.setVisible(false);
     	ruangTablePanel.setVisible(false);
     	gedungTablePanel.setVisible(false);
+    	loginFormPanel.setVisible(false);
     }
     public void tambahBarang() {
     	closesss();
@@ -202,5 +254,10 @@ public class MainForm {
 
 	public void setBarangFormPanel(BarangFormPanel barangFormPanel) {
 		this.barangFormPanel = barangFormPanel;
+	}
+	
+	public void loginAdmin() {
+		menu.setVisible(true);
+		viewBarangTable();
 	}
 }

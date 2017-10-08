@@ -11,5 +11,9 @@
     <property name="hibernate.hbm2ddl.auto">update</property>
     
     <mapping class="apps.tables.Gedung"/>
+    <mapping class="apps.tables.Ruang"/>
+    <mapping class="apps.tables.Rak"/>
+    <mapping class="apps.tables.Barang"/>
+    <mapping class="apps.tables.Password"/>
    </session-factory>
 </hibernate-configuration>  
