@@ -78,7 +78,7 @@ public class GedungFormPanel extends JPanel {
 					return;
 				}
 				if (isGedungWithSameNameExist(namaGedung.getText(), idEditted)) {
-					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Gedung dengan nama <font style=\"color:blue;\">".concat(namaGedung.getText()).concat("</font> telah terdaftar</span>"),
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Gedung <font style=\"color:blue;\">".concat(namaGedung.getText()).concat("</font> telah terdaftar</span>"),
 							"Perhatian", JOptionPane.ERROR_MESSAGE);
 					namaGedung.requestFocus();
 					return;

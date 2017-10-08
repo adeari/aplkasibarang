@@ -93,7 +93,7 @@ public class RuangFormPanel extends JPanel {
 				}
 				
 				if (isRuangWithSameNameExist(namaRuang.getText(), idEditted)) {
-					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Ruang dengan nama <font style=\"color:blue;\">".concat(namaRuang.getText()).concat("</font> telah terdaftar</span>"),
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Ruang <font style=\"color:blue;\">".concat(namaRuang.getText()).concat("</font> telah terdaftar</span>"),
 							"Perhatian", JOptionPane.ERROR_MESSAGE);
 					namaRuang.requestFocus();
 					return;
@@ -146,6 +146,7 @@ public class RuangFormPanel extends JPanel {
 		if (refreshGedung()) {
 			titel.setText("Tambah ruang");
 			setVisible(true);
+			resetButton.doClick();
 			idEditted = null;
 		}
 	}

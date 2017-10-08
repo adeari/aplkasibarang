@@ -10,7 +10,9 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+import aps.controller.BarangTablePanel;
 import aps.controller.GedungTablePanel;
+import aps.controller.RakTablePanel;
 import aps.controller.RuangTablePanel;
 
 
@@ -33,6 +35,10 @@ public class ButtonActionPanel extends JPanel {
 					((GedungTablePanel) tableAccess).setEdit(row);
 				} else if ("ruang".equals(handle)) {
 					((RuangTablePanel) tableAccess).setEdit(row);
+				} else if ("rak".equals(handle)) {
+					((RakTablePanel) tableAccess).setEdit(row);
+				} else if ("barang".equals(handle)) {
+					((BarangTablePanel) tableAccess).setEdit(row);
 				}
 			}
 		});
@@ -45,6 +51,10 @@ public class ButtonActionPanel extends JPanel {
 					((GedungTablePanel) tableAccess).removeDataById(row);
 				}  else if ("ruang".equals(handle)) {
 					((RuangTablePanel) tableAccess).removeDataById(row);
+				}  else if ("rak".equals(handle)) {
+					((RakTablePanel) tableAccess).removeDataById(row);
+				}  else if ("barang".equals(handle)) {
+					((BarangTablePanel) tableAccess).removeDataById(row);
 				}
 			}
 		});

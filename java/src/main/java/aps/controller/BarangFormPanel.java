@@ -5,12 +5,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -32,29 +34,22 @@ import apps.tables.Ruang;
 public class BarangFormPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private LabelK titel;
-
 	private TextFieldK namaBarang;
-
 	private ButtonK simpanButton, resetButton, tabelButton;
-
 	private LabelK labelStatus;
-
 	private Timer timer;
-
-	private Gedung valueEditted;
-
 	private Combobox gedungCombobox;
 	private List<Gedung> gedungValues;
-
 	private Combobox ruangCombobox;
 	private List<Ruang> ruangValues;
-
 	private Combobox rakCombobox;
 	private List<Rak> rakValues;
-
 	private ActionListener gedungComboboxActionListener;
 	private ActionListener ruangComboboxActionListener;
 	private MainForm mainForm;
+	private Integer idEditted;
+	private List<Predicate> predicates;
+	private Predicate[] predicatesr;
 
 	public BarangFormPanel(JPanel jPanel, MainForm mainForm1) {
 		mainForm = mainForm1;
@@ -66,6 +61,7 @@ public class BarangFormPanel extends JPanel {
 		titel = new LabelK("Form gedung");
 		titel.setFont(new Font("Arial", Font.BOLD, 50));
 		add(titel);
+		predicates = new ArrayList<Predicate>();
 
 		JSeparator separator = new JSeparator();
 		separator.setSize(new Dimension(width, 20));
@@ -129,20 +125,34 @@ public class BarangFormPanel extends JPanel {
 					namaBarang.requestFocus();
 					return;
 				}
-				
+
+				if (isBarangWithSameNameExist(namaBarang.getText(), idEditted)) {
+					JOptionPane.showMessageDialog(null,
+							"<html><span style='font-size:22px;'>Rak <font style=\"color:blue;\">"
+									.concat(namaBarang.getText()).concat("</font> telah terdaftar</span>"),
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaBarang.requestFocus();
+					return;
+				}
+
 				Barang barang = new Barang();
 				barang.setBarang(namaBarang.getText());
 				barang.setGedung(gedungValues.get(gedungCombobox.getSelectedIndex()));
-				if (ruangCombobox.getSelectedItem() != null) {
+				if (ruangCombobox.getItemCount() > 0 && ruangCombobox.getSelectedItem() != null) {
 					barang.setRuang(ruangValues.get(ruangCombobox.getSelectedIndex()));
 				}
-				if (rakCombobox.getSelectedItem() != null) {
+				if (rakCombobox.getItemCount() > 0 && rakCombobox.getSelectedItem() != null) {
 					barang.setRak(rakValues.get(rakCombobox.getSelectedIndex()));
 				}
 
 				Session session = HibernateUtil.getSessionFactory().openSession();
 				Transaction transaction = session.beginTransaction();
-				session.save(barang);
+				if (idEditted == null) {
+					session.save(barang);
+				} else {
+					barang.setId(idEditted);
+					session.update(barang);
+				}
 				transaction.commit();
 				session.close();
 				afterSaved();
@@ -175,6 +185,64 @@ public class BarangFormPanel extends JPanel {
 	public void setTambah() {
 		if (refreshGedung()) {
 			titel.setText("Tambah barang");
+			setVisible(true);
+			resetButton.doClick();
+			idEditted = null;
+			
+		}
+	}
+
+	public void setEdit(int id) {
+		if (refreshGedung()) {
+			titel.setText("Edit barang");
+			idEditted = id;
+			resetButton.doClick();
+
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+			CriteriaQuery<Barang> criteriaQuery = criteriaBuilder.createQuery(Barang.class);
+			Root<Barang> root = criteriaQuery.from(Barang.class);
+			criteriaQuery.select(root);
+			criteriaQuery.where(criteriaBuilder.equal(root.get("id"), idEditted));
+			List<Barang> barangs = (List<Barang>) session.createQuery(criteriaQuery).getResultList();
+			for (Barang barang : barangs) {
+				int idGedung = barang.getGedung().getId();
+				int i = 0;
+				for (Gedung gedung : gedungValues) {
+					if (gedung.getId() == idGedung) {
+						gedungCombobox.setSelectedIndex(i);
+						refreshRuangCombobox();
+						if (ruangCombobox.getItemCount() > 0 && barang.getRuang() != null) {
+							i = 0;
+							int idruang = barang.getRuang().getId();
+							for (Ruang ruang : ruangValues) {
+								if (ruang.getId() == idruang) {
+									ruangCombobox.setSelectedIndex(i);
+									refreshRakCombobox();
+									if (rakCombobox.getItemCount() > 0 && barang.getRak() != null) {
+										i = 0;
+										int idRak = barang.getRak().getId();
+										for (Rak rak : rakValues) {
+											if (rak.getId() == idRak) {
+												rakCombobox.setSelectedIndex(i);
+												break;
+											}
+											i++;
+										}
+									}
+									break;
+								}
+								i++;
+							}
+						}
+						break;
+					}
+					i++;
+				}
+				namaBarang.setText(barang.getBarang());
+			}
+			session.close();
+
 			setVisible(true);
 		}
 	}
@@ -245,8 +313,8 @@ public class BarangFormPanel extends JPanel {
 		Root<Rak> root = criteriaQuery.from(Rak.class);
 		criteriaQuery.select(root);
 		if (ruangCombobox.getSelectedItem() != null) {
-		criteriaQuery
-				.where(criteriaBuilder.equal(root.get("ruang"), ruangValues.get(ruangCombobox.getSelectedIndex())));
+			criteriaQuery
+					.where(criteriaBuilder.equal(root.get("ruang"), ruangValues.get(ruangCombobox.getSelectedIndex())));
 		}
 		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("rak")));
 		if (rakValues != null) {
@@ -267,7 +335,7 @@ public class BarangFormPanel extends JPanel {
 		labelStatus.setText("Data tersimpan");
 		timer = new Timer();
 		timer.schedule(new RemindTask(), 3 * 1000, 3 * 1000);
-		if (valueEditted == null) {
+		if (idEditted == null) {
 			resetButton.doClick();
 		}
 	}
@@ -280,5 +348,42 @@ public class BarangFormPanel extends JPanel {
 				timer = null;
 			}
 		}
+	}
+
+	private boolean isBarangWithSameNameExist(String namaBarang, Integer id) {
+		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Barang.class)));
+
+		Root<Barang> root = criteriaQuerycheck.from(Barang.class);
+
+		Ruang ruang = null;
+		if (ruangCombobox.getItemCount() > 0) {
+			ruang = ruangValues.get(ruangCombobox.getSelectedIndex());
+		}
+		predicates.add(criteriaBuilderCheck.equal(root.get("ruang"), ruang));
+
+		Rak rak = null;
+		if (rakCombobox.getItemCount() > 0) {
+			rak = rakValues.get(rakCombobox.getSelectedIndex());
+		}
+		predicates.add(criteriaBuilderCheck.equal(root.get("rak"), rak));
+
+		predicates.add(
+				criteriaBuilderCheck.equal(root.get("gedung"), gedungValues.get(gedungCombobox.getSelectedIndex())));
+		predicates.add(criteriaBuilderCheck.equal(root.get("barang"), namaBarang));
+		if (id != null) {
+			predicates.add(criteriaBuilderCheck.notEqual(root.get("id"), id));
+		}
+		predicatesr = predicates.toArray(new Predicate[] {});
+		criteriaQuerycheck.where(predicatesr);
+		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
+		sessionCheck.close();
+		predicates.clear();
+		if (dataSize > 0) {
+			return true;
+		}
+		return false;
 	}
 }

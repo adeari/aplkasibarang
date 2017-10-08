@@ -23,6 +23,7 @@ import javax.persistence.criteria.Root;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -32,6 +33,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import apps.component.ButtonActionEditor;
 import apps.component.ButtonK;
@@ -51,7 +53,6 @@ public class BarangTablePanel extends JPanel {
 	private LabelK titel;
 	private BarangTablePanel barangTablePanel;
 	private MainForm mainForm;
-	
 	private AbstractTableModel tableModel;
 	private Vector<Object> dataini;
 	private TableK table;
@@ -99,8 +100,8 @@ public class BarangTablePanel extends JPanel {
 		add(addButtonK);
 		
 		predicates = new ArrayList<Predicate>();
-		kolom = new String[]{"", "Barang", "Gedung", "Ruang", "Rak", " "};
-		filters = new String[] {"", "", "", "", "", " "};
+		kolom = new String[]{"", "Barang", "Gedung", "Ruang", "Rak", "id", " "};
+		filters = new String[] {"", "", "", "", "", "", " "};
 		dataini = new Vector<Object>();
 		tableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -169,9 +170,16 @@ public class BarangTablePanel extends JPanel {
 		tableColumn.setCellRenderer(new ButtonRenderActionColumn("barang", barangTablePanel));
 		tableColumn.setCellEditor(new ButtonActionEditor("barang", barangTablePanel));
 		
+		tableColumn = table.getColumn("id");
+		tableColumn.setMinWidth(0);
+		tableColumn.setPreferredWidth(0);
+		tableColumn.setWidth(0);
+		tableColumn.setMaxWidth(0);
+		
 		JPanel rowPanel = new JPanel(flowLayout);
 		add(rowPanel);
 		rowOptions = new Combobox();
+		rowOptions.addItem("4");
 		rowOptions.addItem("50");
 		rowOptions.addItem("100");
 		rowOptions.addItem("200");
@@ -396,6 +404,7 @@ public class BarangTablePanel extends JPanel {
 			rowData.addElement((barang.getRuang() == null) ? "" : barang.getRuang().getRuang());
 			rowData.addElement((barang.getRak() == null) ? "" : barang.getRak().getRak());
 			rowData.addElement(barang.getId());
+			rowData.addElement(dataini.size());
 			dataini.addElement(rowData);
 		}
 		displaying = displaying.concat(
@@ -405,11 +414,51 @@ public class BarangTablePanel extends JPanel {
 		predicatesr = null;
 		tableModel.fireTableDataChanged();
 	}
+	
 	public void populateFilter() {
 		for (int i = 0; i < filters.length; i++) {
 			if (table.getValueAt(0, i) != null) {
 				filters[i] = table.getValueAt(0, i).toString();
 			}
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void setEdit(int row) {
+		mainForm.closesss();
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		mainForm.getBarangFormPanel().setEdit((int) rowData.get(5));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void removeDataById(int row) {
+		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
+		Barang barang = getBarangById((int) rowData.get(5));
+		if (JOptionPane.showConfirmDialog(null,
+				"<html><span style='font-size:22px;'>Apakah Barang <span style='color:red;'>".concat(rowData.get(1).toString()).concat("</span> akan di hapus?</span>"), "Perhatian",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			Transaction transaction = session.beginTransaction();
+			session.delete(barang);
+			transaction.commit();
+			session.close();
+			showData();
+		}
+	}
+	
+	private Barang getBarangById(int id) {
+		Barang barang = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		CriteriaQuery<Barang> criteriaQuery = criteriaBuilder.createQuery(Barang.class);
+		Root<Barang> root = criteriaQuery.from(Barang.class);
+		criteriaQuery.select(root);
+		criteriaQuery.where(criteriaBuilder.equal(root.get("id"), id));
+		List<Barang> barangs = (List<Barang>) session.createQuery(criteriaQuery).getResultList();
+		for (Barang rakLoop : barangs) {
+			barang = rakLoop;
+		}
+		session.close();
+		return barang;
 	}
 }

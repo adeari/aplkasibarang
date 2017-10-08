@@ -90,7 +90,7 @@ public class RakTablePanel extends JPanel {
 		separator.setPreferredSize(separator.getSize());
 		add(separator);
 		
-		ButtonK addButtonK = new ButtonK("Tambah Barang");
+		ButtonK addButtonK = new ButtonK("Tambah Rak");
 		addButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
 		addButtonK.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
@@ -100,8 +100,8 @@ public class RakTablePanel extends JPanel {
 		add(addButtonK);
 		
 		predicates = new ArrayList<Predicate>();
-		kolom = new String[]{"", "Rak", "Gedung", "Ruang", " "};
-		filters = new String[] {"", "", "", "", ""};
+		kolom = new String[]{"", "Rak", "Gedung", "Ruang", "id"," "};
+		filters = new String[] {"", "", "", "", "", ""};
 		dataini = new Vector<Object>();
 		tableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -167,6 +167,12 @@ public class RakTablePanel extends JPanel {
 		tableColumn.setMinWidth(130);
 		tableColumn.setCellRenderer(new ButtonRenderActionColumn("rak", barangTablePanel));
 		tableColumn.setCellEditor(new ButtonActionEditor("rak", barangTablePanel));
+		
+		tableColumn = table.getColumn("id");
+		tableColumn.setMinWidth(0);
+		tableColumn.setPreferredWidth(0);
+		tableColumn.setWidth(0);
+		tableColumn.setMaxWidth(0);
 		
 		JPanel rowPanel = new JPanel(flowLayout);
 		add(rowPanel);
@@ -419,7 +425,7 @@ public class RakTablePanel extends JPanel {
 	public void setEdit(int row) {
 		mainForm.closesss();
 		Vector<Object> rowData = (Vector<Object>) dataini.get(row);
-		mainForm.getRuangFormPanel().setEdit((int) rowData.get(3));
+		mainForm.getRakFormPanel().setEdit((int) rowData.get(4));
 	}
 	@SuppressWarnings("unchecked")
 	public void removeDataById(int row) {

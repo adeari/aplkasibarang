@@ -5,12 +5,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -31,25 +33,19 @@ import apps.tables.Ruang;
 public class RakFormPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private LabelK titel;
-	
 	private TextFieldK namaRak;
-	
 	private ButtonK simpanButton, resetButton, tabelButton;
-	
 	private LabelK labelStatus;
-	
 	private Timer timer;
-	
-	private Gedung valueEditted;
-	
 	private Combobox gedungCombobox;
 	private List<Gedung> gedungValues;
-	
 	private Combobox ruangCombobox;
 	private List<Ruang> ruangValues;
-	
 	private ActionListener gedungComboboxActionListener;
 	private MainForm mainForm;
+	private Integer idEditted;
+	private List<Predicate> predicates;
+	private Predicate[] predicatesr;
 
 	public RakFormPanel(JPanel jPanel, MainForm mainForm1) {
 		mainForm = mainForm1;
@@ -61,6 +57,7 @@ public class RakFormPanel extends JPanel {
 		titel = new LabelK("Form gedung");
 		titel.setFont(new Font("Arial", Font.BOLD, 50));
 		add(titel);
+		predicates = new ArrayList<Predicate>();
 		
 		JSeparator separator = new JSeparator();
 		separator.setSize(new Dimension(width, 20));
@@ -103,8 +100,7 @@ public class RakFormPanel extends JPanel {
 		simpanButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				
-				if (ruangCombobox.getSelectedItem() == null) {
+				if (ruangCombobox.getItemCount() == 0) {
 					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Ruangan tidak boleh kosong</span>",
 							"Perhatian", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -117,13 +113,25 @@ public class RakFormPanel extends JPanel {
 					return;
 				}
 				
+				if (isRakWithSameNameExist(namaRak.getText(), idEditted)) {
+					JOptionPane.showMessageDialog(null, "<html><span style='font-size:22px;'>Rak <font style=\"color:blue;\">".concat(namaRak.getText()).concat("</font> telah terdaftar</span>"),
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					namaRak.requestFocus();
+					return;
+				}
+				
 				Rak rak = new Rak();
 				rak.setRak(namaRak.getText());
 				rak.setRuang(ruangValues.get(ruangCombobox.getSelectedIndex()));
 				
 				Session session = HibernateUtil.getSessionFactory().openSession();
 				Transaction transaction = session.beginTransaction();
-				session.save(rak);
+				if (idEditted == null) {
+					session.save(rak);
+				} else {
+					rak.setId(idEditted);
+					session.update(rak);
+				}
 				transaction.commit();
 				session.close();
 				afterSaved();
@@ -156,6 +164,48 @@ public class RakFormPanel extends JPanel {
 	public void setTambah() {
 		if (refreshGedungCombobox()) {
 			titel.setText("Tambah Rak");
+			setVisible(true);
+			resetButton.doClick();
+			idEditted = null;
+		}
+	}
+	
+	public void setEdit(int id) {
+		if (refreshGedungCombobox()) {
+			titel.setText("Edit Rak");
+			resetButton.doClick();
+			idEditted = id;
+			
+			Session session = HibernateUtil.getSessionFactory().openSession();
+			CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+			CriteriaQuery<Rak> criteriaQuery = criteriaBuilder.createQuery(Rak.class);
+			Root<Rak> root = criteriaQuery.from(Rak.class);
+			criteriaQuery.select(root);
+			criteriaQuery.where(criteriaBuilder.equal(root.get("id"), idEditted));
+			List<Rak> raks = (List<Rak>) session.createQuery(criteriaQuery).getResultList();
+			for (Rak rak : raks) {
+				int idruang = rak.getRuang().getId();
+				int idGedung = rak.getRuang().getGedung().getId();
+				int i = 0;
+				for (Gedung gedung : gedungValues) {
+					if (gedung.getId() == idGedung) {
+						gedungCombobox.setSelectedIndex(i);
+						refreshRuangCombobox();
+						i = 0;
+						for (Ruang ruang : ruangValues) {
+							if (ruang.getId() == idruang) {
+								ruangCombobox.setSelectedIndex(i);
+								break;
+							}
+							i++;
+						}
+						break;
+					}
+					i++;
+				}
+				namaRak.setText(rak.getRak());
+			}
+			session.close();
 			setVisible(true);
 		}
 	}
@@ -219,7 +269,7 @@ public class RakFormPanel extends JPanel {
 		labelStatus.setText("Data tersimpan");
 		timer = new Timer();
 		timer.schedule(new RemindTask(), 3 * 1000, 3 * 1000);
-		if (valueEditted == null) {
+		if (idEditted == null) {
 			resetButton.doClick();
 		}
 	}
@@ -231,5 +281,28 @@ public class RakFormPanel extends JPanel {
 				timer = null;
 			}
 		}
+	}
+	
+	private boolean isRakWithSameNameExist(String namarak, Integer id) {
+		Session sessionCheck = HibernateUtil.getSessionFactory().openSession();
+		CriteriaBuilder criteriaBuilderCheck = sessionCheck.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuerycheck = criteriaBuilderCheck.createQuery(Long.class);
+		criteriaQuerycheck.select(criteriaBuilderCheck.count(criteriaQuerycheck.from(Rak.class)));
+		
+		Root<Rak> root = criteriaQuerycheck.from(Rak.class);
+		predicates.add(criteriaBuilderCheck.equal(root.get("ruang"), ruangValues.get(ruangCombobox.getSelectedIndex())));
+		predicates.add(criteriaBuilderCheck.equal(root.get("rak"), namarak));
+		if (id != null) {
+			predicates.add(criteriaBuilderCheck.notEqual(root.get("id"), id));
+		}
+		predicatesr = predicates.toArray(new Predicate[] {});
+		criteriaQuerycheck.where(predicatesr);
+		Long dataSize = (Long) sessionCheck.createQuery(criteriaQuerycheck).getSingleResult();
+		sessionCheck.close();
+		predicates.clear();
+		if (dataSize > 0) {
+			return true;
+		}
+		return false;
 	}
 }
