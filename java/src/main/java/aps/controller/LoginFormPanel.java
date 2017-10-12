@@ -28,7 +28,6 @@ public class LoginFormPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private LabelK titel;
 	private PasswordK password;
-	private LabelK labelStatus;
 	private MainForm mainForm;
 	private ButtonK loginButton;
 	
@@ -39,7 +38,7 @@ public class LoginFormPanel extends JPanel {
 		FlowLayout flowLayout = new FlowLayout(FlowLayout.LEADING);
 		flowLayout.setHgap(1);
 		setLayout(flowLayout);
-		titel = new LabelK("Form gedung");
+		titel = new LabelK("L O G I N");
 		titel.setFont(new Font("Arial", Font.BOLD, 50));
 		add(titel);
 		
@@ -95,8 +94,8 @@ public class LoginFormPanel extends JPanel {
 	}
 	
 	public void setLogin() {
-		titel.setText("Login");
 		setVisible(true);
+		password.setText("");
 		password.requestFocus();
 	}
 }

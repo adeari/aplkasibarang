@@ -1,7 +1,6 @@
 package aps.controller;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -25,9 +24,11 @@ public class MainForm {
 	private RuangTablePanel ruangTablePanel;
 	private GedungTablePanel gedungTablePanel;
 	private LoginFormPanel loginFormPanel;
+	private PasswordFormPanel passwordFormPanel;
 	private JPanel panel;
 	private MainForm mainForm;
 	private Menu menu;
+	private MenuItem loginAdmin;
 	
     public MainForm() {
     	mainForm = this;
@@ -59,6 +60,8 @@ public class MainForm {
         panel.add(gedungTablePanel);
         loginFormPanel = new LoginFormPanel(panel, mainForm);
         panel.add(loginFormPanel);
+        passwordFormPanel = new PasswordFormPanel(panel, mainForm);
+        panel.add(passwordFormPanel);
         
         frame.add(panel);
         
@@ -67,9 +70,10 @@ public class MainForm {
         Menu menuUser = new Menu("Menu");
         menubar.add(menuUser);
         
-        MenuItem loginAdmin = new MenuItem("Login Admin");
+        loginAdmin = new MenuItem("Login Admin");
     	loginAdmin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				closesss();
 				loginFormPanel.setLogin();
 			}
 		});
@@ -92,6 +96,8 @@ public class MainForm {
     	MenuItem gantiPassword = new MenuItem("Ganti Password");
     	gantiPassword.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
+    			closesss();
+    			passwordFormPanel.view();
     		}
     	});
     	menu.add(gantiPassword);
@@ -99,6 +105,9 @@ public class MainForm {
     	MenuItem logoutAdmin = new MenuItem("Logout Admin");
     	logoutAdmin.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
+    			closesss();
+    			menu.setVisible(false);
+    			loginAdmin.setVisible(true);
     		}
     	});
     	menu.add(logoutAdmin);
@@ -190,6 +199,8 @@ public class MainForm {
     	ruangTablePanel.setVisible(false);
     	gedungTablePanel.setVisible(false);
     	loginFormPanel.setVisible(false);
+    	passwordFormPanel.setVisible(false);
+    	
     }
     public void tambahBarang() {
     	closesss();
@@ -258,6 +269,7 @@ public class MainForm {
 	
 	public void loginAdmin() {
 		menu.setVisible(true);
+		loginAdmin.setVisible(false);
 		viewBarangTable();
 	}
 }
