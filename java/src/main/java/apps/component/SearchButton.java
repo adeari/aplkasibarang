@@ -3,10 +3,11 @@ package apps.component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import aps.controller.BarangTablePanel;
-import aps.controller.GedungTablePanel;
-import aps.controller.RakTablePanel;
-import aps.controller.RuangTablePanel;
+import apps.controller.BarangTablePanel;
+import apps.controller.BarangTableUmumPanel;
+import apps.controller.GedungTablePanel;
+import apps.controller.RakTablePanel;
+import apps.controller.RuangTablePanel;
 
 public class SearchButton extends ButtonK {
 	private static final long serialVersionUID = 1L;
@@ -43,6 +44,14 @@ public class SearchButton extends ButtonK {
 			searchButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					RakTablePanel tabePanel = (RakTablePanel) actionObject;
+					tabePanel.populateFilter();
+					tabePanel.showData();
+				}
+			});
+		} else if ("barangumum".equals(actionName)) {
+			searchButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					BarangTableUmumPanel tabePanel = (BarangTableUmumPanel) actionObject;
 					tabePanel.populateFilter();
 					tabePanel.showData();
 				}

@@ -10,10 +10,10 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
-import aps.controller.BarangTablePanel;
-import aps.controller.GedungTablePanel;
-import aps.controller.RakTablePanel;
-import aps.controller.RuangTablePanel;
+import apps.controller.BarangTablePanel;
+import apps.controller.GedungTablePanel;
+import apps.controller.RakTablePanel;
+import apps.controller.RuangTablePanel;
 
 
 public class ButtonActionPanel extends JPanel {
@@ -61,9 +61,12 @@ public class ButtonActionPanel extends JPanel {
 		setOpaque(true);
 		setBackground(editButton.getBackground());
 		setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		add(editButton, c);
-		add(deleteButton, c);
+		
+		if (!"barangumum".equals(handle)) {
+			GridBagConstraints c = new GridBagConstraints();
+			add(editButton, c);
+			add(deleteButton, c);
+		}
 	}
 
 	public void setRow(int rowSelected) {

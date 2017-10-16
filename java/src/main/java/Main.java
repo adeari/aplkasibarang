@@ -16,9 +16,9 @@ import javax.swing.Timer;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import apps.controller.HibernateUtil;
+import apps.controller.MainForm;
 import apps.tables.Password;
-import aps.controller.HibernateUtil;
-import aps.controller.MainForm;
 
 public class Main extends JWindow {
 	private static final long serialVersionUID = 1L;
