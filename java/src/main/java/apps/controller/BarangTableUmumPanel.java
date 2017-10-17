@@ -123,7 +123,7 @@ public class BarangTableUmumPanel extends JPanel {
 		add(separator);
 
 		ButtonK pdfButtonK = new ButtonK("P D F");
-		pdfButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
+		pdfButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/pdf.png")));
 		pdfButtonK.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				createPdf();
@@ -131,7 +131,7 @@ public class BarangTableUmumPanel extends JPanel {
 		});
 		add(pdfButtonK);
 		ButtonK printButtonK = new ButtonK("PRINT");
-		printButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
+		printButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/printer.png")));
 		printButtonK.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				printPdf();
