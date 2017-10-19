@@ -50,8 +50,8 @@ public class PasswordFormPanel extends JPanel {
 		separator.setSize(new Dimension(width, 20));
 		separator.setPreferredSize(separator.getSize());
 		add(separator);
-		int labelWidth = width * 20 / 100;
-		int textWidth = width * 75 / 100;
+		int labelWidth = width * 30 / 100;
+		int textWidth = width * 65 / 100;
 		LabelK labelK = new LabelK("Password Lama");
 		labelK.setPreferredSize(new Dimension(labelWidth, 35));
 		add(labelK);
@@ -173,7 +173,7 @@ public class PasswordFormPanel extends JPanel {
 	}
 	private void afterSaved() {
 		passwordLama.requestFocus();
-		labelStatus.setText("Passwod diganti");
+		labelStatus.setText("Password diganti");
 		timer = new Timer();
 		timer.schedule(new RemindTask(), 3 * 1000, 3 * 1000);
 	}

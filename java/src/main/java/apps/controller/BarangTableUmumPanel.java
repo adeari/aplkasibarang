@@ -11,6 +11,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterJob;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.Vector;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -476,12 +477,8 @@ public class BarangTableUmumPanel extends JPanel {
 	}
 
 	private File getPdfFile() {
-		Properties properties = new Properties();
-		InputStream input = null;
 		try {
-			input = new FileInputStream(getClass().getClassLoader().getResource("properties.properties").getFile());
-			properties.load(input);
-			String folderPdf = properties.getProperty("pdflocation");
+			String folderPdf = apps.component.Properties.pdLocation;
 			File folder = new File(folderPdf);
 			if (!folder.isDirectory()) {
 				folder.mkdirs();
@@ -510,7 +507,7 @@ public class BarangTableUmumPanel extends JPanel {
 
 			PdfPTable table = new PdfPTable(5);
 			table.setWidthPercentage(100);
-			table.setWidths(new int[] {5, 25, 23, 22, 25});
+			table.setWidths(new int[] { 5, 25, 23, 22, 25 });
 			PdfPCell cell;
 			com.itextpdf.text.Font cellTitle = new com.itextpdf.text.Font(FontFamily.TIMES_ROMAN, 15.0f, Font.BOLD);
 
@@ -550,7 +547,7 @@ public class BarangTableUmumPanel extends JPanel {
 				cell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
 				i++;
 				table.addCell(cell);
-				
+
 				cell = new PdfPCell(new Phrase(barang.getBarang()));
 				table.addCell(cell);
 
@@ -574,24 +571,24 @@ public class BarangTableUmumPanel extends JPanel {
 		} catch (DocumentException e) {
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					logger.error(e.getMessage(), e);
-				}
-			}
 		}
 		return null;
 	}
 
 	private void printPdf() {
 		File pdfFile = getPdfFile();
+		PrinterJob pj = PrinterJob.getPrinterJob();
+		PageFormat pf = pj.pageDialog(pj.defaultPage());
 		if (pdfFile != null) {
 			InputStream is = null;
 			try {
 				PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
+				if (defaultPrintService == null) {
+					JOptionPane.showMessageDialog(null,
+							"<html><span style='font-size:22px;'>Komputer tidak terhubung ke printer</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				DocPrintJob printerJob = defaultPrintService.createPrintJob();
 
 				is = new BufferedInputStream(new FileInputStream(pdfFile));
