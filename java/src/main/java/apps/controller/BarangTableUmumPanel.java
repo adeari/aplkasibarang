@@ -11,8 +11,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.print.PageFormat;
-import java.awt.print.PrinterJob;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -577,8 +575,6 @@ public class BarangTableUmumPanel extends JPanel {
 
 	private void printPdf() {
 		File pdfFile = getPdfFile();
-		PrinterJob pj = PrinterJob.getPrinterJob();
-		PageFormat pf = pj.pageDialog(pj.defaultPage());
 		if (pdfFile != null) {
 			InputStream is = null;
 			try {

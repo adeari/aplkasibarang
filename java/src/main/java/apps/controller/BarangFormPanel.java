@@ -333,11 +333,11 @@ public class BarangFormPanel extends JPanel {
 	private void afterSaved() {
 		namaBarang.requestFocus();
 		labelStatus.setText("Data tersimpan");
-		timer = new Timer();
-		timer.schedule(new RemindTask(), 3 * 1000, 3 * 1000);
 		if (idEditted == null) {
 			resetButton.doClick();
 		}
+		timer = new Timer();
+		timer.schedule(new RemindTask(), 3 * 1000, 3 * 1000);
 	}
 
 	private class RemindTask extends TimerTask {
