@@ -14,6 +14,7 @@ import apps.controller.BarangTablePanel;
 import apps.controller.GedungTablePanel;
 import apps.controller.RakTablePanel;
 import apps.controller.RuangTablePanel;
+import apps.controller.laporan.HargaSatuan;
 
 
 public class ButtonActionPanel extends JPanel {
@@ -39,6 +40,16 @@ public class ButtonActionPanel extends JPanel {
 					((RakTablePanel) tableAccess).setEdit(row);
 				} else if ("barang".equals(handle)) {
 					((BarangTablePanel) tableAccess).setEdit(row);
+				} else if ("hargabarang".equals(handle)) {
+					((HargaSatuan) tableAccess).editHargaBarang(row);
+				} else if ("hargasatuan".equals(handle)) {
+					((HargaSatuan) tableAccess).editHargaSatuan(row);
+				} else if ("hargasatuan".equals(handle)) {
+					((HargaSatuan) tableAccess).editHargaSatuan(row);
+				} else if ("hargajasa".equals(handle)) {
+					((HargaSatuan) tableAccess).editHargaJasa(row);
+				} else if ("hargalain".equals(handle)) {
+					((HargaSatuan) tableAccess).editHargaLain(row);
 				}
 			}
 		});
@@ -55,6 +66,14 @@ public class ButtonActionPanel extends JPanel {
 					((RakTablePanel) tableAccess).removeDataById(row);
 				}  else if ("barang".equals(handle)) {
 					((BarangTablePanel) tableAccess).removeDataById(row);
+				} else if ("hargabarang".equals(handle)) {
+					((HargaSatuan) tableAccess).deleteHargaBarang(row);
+				} else if ("hargasatuan".equals(handle)) {
+					((HargaSatuan) tableAccess).deleteHargaSatuan(row);
+				} else if ("hargajasa".equals(handle)) {
+					((HargaSatuan) tableAccess).deleteHargaJasa(row);
+				} else if ("hargalain".equals(handle)) {
+					((HargaSatuan) tableAccess).deleteHargaLain(row);
 				}
 			}
 		});

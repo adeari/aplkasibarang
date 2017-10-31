@@ -26,7 +26,7 @@ public class ButtonActionEditor extends AbstractCellEditor implements TableCellE
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object valueIn, boolean isSelected, int row,
 			int column) {
-		if (row == 0) {
+		if (row == 0 && !"hargasatuan".equalsIgnoreCase(actionName) && !"hargabarang".equalsIgnoreCase(actionName) && !"hargajasa".equalsIgnoreCase(actionName) && !"hargalain".equalsIgnoreCase(actionName)) {
 			return new SearchButton("Search", actionName, actionObject);
 		}
 		if (isSelected) {

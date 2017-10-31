@@ -19,7 +19,9 @@ import javax.swing.table.TableColumn;
 
 import org.apache.log4j.Logger;
 
+import apps.component.ButtonActionEditor;
 import apps.component.ButtonK;
+import apps.component.ButtonRenderActionColumn;
 import apps.component.LabelK;
 import apps.component.TableK;
 import apps.component.TextFieldK;
@@ -30,6 +32,10 @@ public class HargaSatuan extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private LabelK titel;
 	private HargaSatuan hargaSatuan;
+	private HargaBarangFormPanel hargaBarangFormPanel;
+	private HargaSatuanFormPanel hargaSatuanFormPanel;
+	private HargaJasaFormPanel hargaJasaFormPanel;
+	private HargaLainFormPanel hargaLainFormPanel;
 	
 	private AbstractTableModel hargaBarangTableModel, hargaSatuanTableModel, hargaJasaTableModel, hargaLainTableModel;
 	private Vector<Object> hargaBarangDataini, hargaSatuanDataini, hargaJasaDataini, hargaLainDataini;
@@ -56,7 +62,7 @@ public class HargaSatuan extends JPanel {
 		flowLayout.setHgap(4);
 		
 		JPanel panel = new JPanel();
-		panel.setPreferredSize(new Dimension(width - 19, 1430));
+		panel.setPreferredSize(new Dimension(width - 19, 1630));
 		panel.setSize(panel.getPreferredSize());
 		panel.setLayout(flowLayout);
 		
@@ -65,8 +71,6 @@ public class HargaSatuan extends JPanel {
 		scroll.setSize(scroll.getPreferredSize());
 		scroll.getVerticalScrollBar().setUnitIncrement(20);
 		add(scroll);
-		
-		
 		
 		titel = new LabelK("DAFTAR HARGA SATUAN BARANG, PEKERJAAN KONSTRUKSI, JASA KONSULTANSI, JASA LAINNYA");
 		titel.setFont(new Font("Arial", Font.BOLD, 20));
@@ -127,7 +131,7 @@ public class HargaSatuan extends JPanel {
 		revisiBarangTextFieldK.setPreferredSize(new Dimension(tableRevisi, 32));
 		panel.add(revisiBarangTextFieldK);
 		
-		hargaBarangKolom = new String[] { "No.", "Jenis Barang", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", "data", " " };
+		hargaBarangKolom = new String[] { "No.", "Jenis Barang", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", " " };
 		hargaBarangDataini = new Vector<Object>();
 		hargaBarangTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -171,6 +175,16 @@ public class HargaSatuan extends JPanel {
 			}
 		};
 		hargaBarangTable = new TableK(hargaBarangTableModel);
+		ButtonK addHargaBarang = new ButtonK("Tambah");
+		addHargaBarang.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
+		addHargaBarang.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			closeAll();
+    			hargaBarangFormPanel.setTambah();
+    		}
+    	});
+		panel.add(addHargaBarang);
+		
 		JScrollPane tableScroll = new JScrollPane(hargaBarangTable);
 		tableScroll.setPreferredSize(new Dimension(width * 96 / 100, 250));
 		hargaBarangTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -196,13 +210,10 @@ public class HargaSatuan extends JPanel {
 		tableColumn.setMinWidth(300);
 		tableColumn = hargaBarangTable.getColumn("Keterangan");
 		tableColumn.setMinWidth(300);
-		tableColumn = hargaBarangTable.getColumn("data");
-		tableColumn.setWidth(0);
-		tableColumn.setMinWidth(0);
-		tableColumn.setMaxWidth(0);
 		tableColumn = hargaBarangTable.getColumn(" ");
+		tableColumn.setCellRenderer(new ButtonRenderActionColumn("hargabarang", hargaSatuan));
+		tableColumn.setCellEditor(new ButtonActionEditor("hargabarang", hargaSatuan));
 		tableColumn.setMinWidth(130);
-		tableColumn.setCellRenderer(rightRenderer);
 		
 		LabelK standardHargaBLabel = new LabelK("B  STANDAR HARGA SATUAN PEKERJAAN KONSTRUKSI");
 		standardHargaBLabel.setPreferredSize(standardSatuanBarangLabel.getPreferredSize());
@@ -216,7 +227,7 @@ public class HargaSatuan extends JPanel {
 		revisiSatuanTextFieldK.setPreferredSize(revisiBarangTextFieldK.getPreferredSize());
 		panel.add(revisiSatuanTextFieldK);
 
-		hargaSatuanKolom = new String[] { "No.", "Jenis Pekerjaan", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", "data", " " };
+		hargaSatuanKolom = new String[] { "No.", "Jenis Pekerjaan", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", " " };
 		hargaSatuanDataini = new Vector<Object>();
 		hargaSatuanTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -260,6 +271,16 @@ public class HargaSatuan extends JPanel {
 			}
 		};
 		hargaSatuanTable = new TableK(hargaSatuanTableModel);
+		ButtonK addHargaSatuan = new ButtonK("Tambah");
+		addHargaSatuan.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
+		addHargaSatuan.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			closeAll();
+    			hargaSatuanFormPanel.setTambah();
+    		}
+    	});
+		panel.add(addHargaSatuan);
+		
 		JScrollPane tableScroll1 = new JScrollPane(hargaSatuanTable);
 		tableScroll1.setPreferredSize(tableScroll.getPreferredSize());
 		hargaSatuanTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -285,13 +306,10 @@ public class HargaSatuan extends JPanel {
 		tableColumnSatuan.setMinWidth(300);
 		tableColumnSatuan = hargaSatuanTable.getColumn("Keterangan");
 		tableColumnSatuan.setMinWidth(300);
-		tableColumnSatuan = hargaSatuanTable.getColumn("data");
-		tableColumnSatuan.setWidth(0);
-		tableColumnSatuan.setMinWidth(0);
-		tableColumnSatuan.setMaxWidth(0);
 		tableColumnSatuan = hargaSatuanTable.getColumn(" ");
+		tableColumnSatuan.setCellRenderer(new ButtonRenderActionColumn("hargasatuan", hargaSatuan));
+		tableColumnSatuan.setCellEditor(new ButtonActionEditor("hargasatuan", hargaSatuan));
 		tableColumnSatuan.setMinWidth(130);
-		tableColumnSatuan.setCellRenderer(rightSatuanRenderer);
 		
 		LabelK standardJasaLabel = new LabelK("C  STANDAR HARGA SATUAN JASA KONSULTANSI");
 		standardJasaLabel.setPreferredSize(standardSatuanBarangLabel.getPreferredSize());
@@ -305,7 +323,7 @@ public class HargaSatuan extends JPanel {
 		revisiJasaTextFieldK.setPreferredSize(revisiBarangTextFieldK.getPreferredSize());
 		panel.add(revisiJasaTextFieldK);
 		
-		hargaJasaKolom = new String[] { "No.", "Jenis Jasa Konsultasi", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", "data", " " };
+		hargaJasaKolom = new String[] { "No.", "Jenis Jasa Konsultasi", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", " " };
 		hargaJasaDataini = new Vector<Object>();
 		hargaJasaTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -349,6 +367,17 @@ public class HargaSatuan extends JPanel {
 			}
 		};
 		hargaJasaTable = new TableK(hargaJasaTableModel);
+		
+		ButtonK addHargaJasa = new ButtonK("Tambah");
+		addHargaJasa.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
+		addHargaJasa.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			closeAll();
+    			hargaJasaFormPanel.setTambah();
+    		}
+    	});
+		panel.add(addHargaJasa);
+		
 		JScrollPane tableJasaScroll1 = new JScrollPane(hargaJasaTable);
 		tableJasaScroll1.setPreferredSize(tableScroll.getPreferredSize());
 		hargaJasaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -374,13 +403,10 @@ public class HargaSatuan extends JPanel {
 		tableColumnJasa.setMinWidth(300);
 		tableColumnJasa = hargaJasaTable.getColumn("Keterangan");
 		tableColumnJasa.setMinWidth(300);
-		tableColumnJasa = hargaJasaTable.getColumn("data");
-		tableColumnJasa.setWidth(0);
-		tableColumnJasa.setMinWidth(0);
-		tableColumnJasa.setMaxWidth(0);
 		tableColumnJasa = hargaJasaTable.getColumn(" ");
+		tableColumnJasa.setCellRenderer(new ButtonRenderActionColumn("hargajasa", hargaSatuan));
+		tableColumnJasa.setCellEditor(new ButtonActionEditor("hargajasa", hargaSatuan));
 		tableColumnJasa.setMinWidth(130);
-		tableColumnJasa.setCellRenderer(rightJasaRenderer);
 		
 		LabelK standardLainLabel = new LabelK("D  STANDAR HARGA SATUAN JASA LAINNYA");
 		standardLainLabel.setPreferredSize(standardSatuanBarangLabel.getPreferredSize());
@@ -394,7 +420,7 @@ public class HargaSatuan extends JPanel {
 		revisiLainTextFieldK.setPreferredSize(revisiBarangTextFieldK.getPreferredSize());
 		panel.add(revisiLainTextFieldK);
 		
-		hargaLainKolom = new String[] { "No.", "Jenis Jasa Lainnya", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", "data", " " };
+		hargaLainKolom = new String[] { "No.", "Jenis Jasa Lainnya", "Merk/ Tipe/ Spesifikasi", "Satuan", "Harga Satuan (Rp)", "Contoh", "Sumber informasi", "Keterangan", " " };
 		hargaLainDataini = new Vector<Object>();
 		hargaLainTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -438,6 +464,15 @@ public class HargaSatuan extends JPanel {
 			}
 		};
 		hargaLainTable = new TableK(hargaLainTableModel);
+		ButtonK addHargaLain = new ButtonK("Tambah");
+		addHargaLain.setIcon(new ImageIcon(getClass().getResource("/apps/icons/tambah.png")));
+		addHargaLain.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			closeAll();
+    			hargaLainFormPanel.setTambah();
+    		}
+    	});
+		panel.add(addHargaLain);
 		JScrollPane tableLainScroll1 = new JScrollPane(hargaLainTable);
 		tableLainScroll1.setPreferredSize(tableScroll.getPreferredSize());
 		hargaLainTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -463,13 +498,10 @@ public class HargaSatuan extends JPanel {
 		tableColumnLain.setMinWidth(300);
 		tableColumnLain = hargaLainTable.getColumn("Keterangan");
 		tableColumnLain.setMinWidth(300);
-		tableColumnLain = hargaLainTable.getColumn("data");
-		tableColumnLain.setWidth(0);
-		tableColumnLain.setMinWidth(0);
-		tableColumnLain.setMaxWidth(0);
 		tableColumnLain = hargaLainTable.getColumn(" ");
+		tableColumnLain.setCellRenderer(new ButtonRenderActionColumn("hargalain", hargaSatuan));
+		tableColumnLain.setCellEditor(new ButtonActionEditor("hargalain", hargaSatuan));
 		tableColumnLain.setMinWidth(130);
-		tableColumnLain.setCellRenderer(rightLainRenderer);
 		
 		ButtonK pdfButtonK = new ButtonK("P D F");
 		pdfButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/pdf.png")));
@@ -488,9 +520,130 @@ public class HargaSatuan extends JPanel {
 			}
 		});
 		panel.add(printButtonK);
+		
+		hargaBarangFormPanel = new HargaBarangFormPanel(jPanel, mainForm1, hargaSatuan);
+		jPanel.add(hargaBarangFormPanel);
+		hargaSatuanFormPanel = new HargaSatuanFormPanel(jPanel, mainForm1, hargaSatuan);
+		jPanel.add(hargaSatuanFormPanel);
+		hargaJasaFormPanel = new HargaJasaFormPanel(jPanel, mainForm1, hargaSatuan);
+		jPanel.add(hargaJasaFormPanel);
+		hargaLainFormPanel = new HargaLainFormPanel(jPanel, mainForm1, hargaSatuan);
+		jPanel.add(hargaLainFormPanel);
 	}
 
 	public void view() {
 		hargaSatuan.setVisible(true);
+	}
+	
+	public void closeAll() {
+		hargaSatuan.setVisible(false);
+		hargaBarangFormPanel.setVisible(false);
+		hargaSatuanFormPanel.setVisible(false);
+		hargaJasaFormPanel.setVisible(false);
+		hargaLainFormPanel.setVisible(false);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void addRowHargaBarang(Integer index, Vector<Object> row) {
+		if (index == null) {
+			row.set(0, hargaBarangDataini.size() + 1);
+			row.set(8, hargaBarangDataini.size());
+			hargaBarangDataini.addElement(row);
+		} else {
+			Vector<Object> rowSelected = (Vector<Object>) hargaBarangDataini.get(index);
+			row.set(0, rowSelected.get(0));
+			row.set(8, rowSelected.get(8));
+			hargaBarangDataini.set(index, row);
+		}
+		hargaBarangTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void editHargaBarang(int row) {
+		closeAll();
+		hargaBarangFormPanel.setEdit(row, (Vector<Object>) hargaBarangDataini.get(row));
+	}
+	
+	public void deleteHargaBarang(int row) {
+		hargaBarangDataini.remove(row);
+		hargaBarangTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void addRowHargaSatuan(Integer index, Vector<Object> row) {
+		if (index == null) {
+			row.set(0, hargaSatuanDataini.size() + 1);
+			row.set(8, hargaSatuanDataini.size());
+			hargaSatuanDataini.addElement(row);
+		} else {
+			Vector<Object> rowSelected = (Vector<Object>) hargaSatuanDataini.get(index);
+			row.set(0, rowSelected.get(0));
+			row.set(8, rowSelected.get(8));
+			hargaSatuanDataini.set(index, row);
+		}
+		hargaSatuanTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void editHargaSatuan(int row) {
+		closeAll();
+		hargaSatuanFormPanel.setEdit(row, (Vector<Object>) hargaSatuanDataini.get(row));
+	}
+	
+	public void deleteHargaSatuan(int row) {
+		hargaSatuanDataini.remove(row);
+		hargaSatuanTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void addRowHargaJasa(Integer index, Vector<Object> row) {
+		if (index == null) {
+			row.set(0, hargaJasaDataini.size() + 1);
+			row.set(8, hargaJasaDataini.size());
+			hargaJasaDataini.addElement(row);
+		} else {
+			Vector<Object> rowSelected = (Vector<Object>) hargaJasaDataini.get(index);
+			row.set(0, rowSelected.get(0));
+			row.set(8, rowSelected.get(8));
+			hargaJasaDataini.set(index, row);
+		}
+		hargaJasaTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void editHargaJasa(int row) {
+		closeAll();
+		hargaJasaFormPanel.setEdit(row, (Vector<Object>) hargaJasaDataini.get(row));
+	}
+	
+	public void deleteHargaJasa(int row) {
+		hargaJasaDataini.remove(row);
+		hargaJasaTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void addRowHargaLain(Integer index, Vector<Object> row) {
+		if (index == null) {
+			row.set(0, hargaLainDataini.size() + 1);
+			row.set(8, hargaLainDataini.size());
+			hargaLainDataini.addElement(row);
+		} else {
+			Vector<Object> rowSelected = (Vector<Object>) hargaLainDataini.get(index);
+			row.set(0, rowSelected.get(0));
+			row.set(8, rowSelected.get(8));
+			hargaLainDataini.set(index, row);
+		}
+		hargaLainTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void editHargaLain(int row) {
+		closeAll();
+		hargaLainFormPanel.setEdit(row, (Vector<Object>) hargaLainDataini.get(row));
+	}
+	
+	public void deleteHargaLain(int row) {
+		hargaLainDataini.remove(row);
+		hargaLainTableModel.fireTableDataChanged();
 	}
 }

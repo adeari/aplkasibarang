@@ -20,7 +20,7 @@ public class ButtonRenderActionColumn extends ButtonActionPanel implements Table
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object valueIn, boolean isSelected, boolean hasFocus, int row,
 			int column) {
-		if (row == 0) {
+		if (row == 0 && !"hargasatuan".equalsIgnoreCase(actionName) && !"hargabarang".equalsIgnoreCase(actionName) && !"hargajasa".equalsIgnoreCase(actionName) && !"hargalain".equalsIgnoreCase(actionName)) {
 			return new SearchButton("Search", actionName, actionObject);
 		}
 		if (isSelected) {

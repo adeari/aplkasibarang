@@ -239,8 +239,7 @@ public class MainForm {
 		loginFormPanel.setVisible(false);
 		passwordFormPanel.setVisible(false);
 		barangTableUmumPanel.setVisible(false);
-		hargaSatuan.setVisible(false);
-
+		hargaSatuan.closeAll();
 	}
 
 	public void tambahBarang() {

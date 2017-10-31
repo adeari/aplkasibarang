@@ -69,8 +69,6 @@ public class RuangFormPanel extends JPanel {
 		gedungCombobox.setPreferredSize(new Dimension(textWidth, 35));
 		add(gedungCombobox);
 		
-		
-		
 		labelK = new LabelK("Nama Ruang");
 		labelK.setPreferredSize(new Dimension(labelWidth, 35));
 		add(labelK);

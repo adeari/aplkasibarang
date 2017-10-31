@@ -29,11 +29,15 @@ public class DecimalTextFieldK extends JTextField {
 			}
 		});
 		addKeyListener(new KeyAdapter() {
-			public void keyReleased(KeyEvent evt) {
+			public void keyTyped(KeyEvent evt) {
 				char c = evt.getKeyChar();
 				if (!(Character.isDigit(c) || (c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE))) {
+					getToolkit().beep();
 					evt.consume();
 				}
+			}
+			
+			public void keyReleased(KeyEvent evt) {
 				textFieldK.setText(MyFunction.getNumberFormat(textFieldK.getText().replace(".", "")));
 			}
 		});
