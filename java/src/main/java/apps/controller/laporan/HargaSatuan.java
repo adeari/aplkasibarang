@@ -1,14 +1,32 @@
 package apps.controller.laporan;
 
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -18,6 +36,23 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.apache.log4j.Logger;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.ExceptionConverter;
+import com.itextpdf.text.Font.FontFamily;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import apps.component.ButtonActionEditor;
 import apps.component.ButtonK;
@@ -203,6 +238,7 @@ public class HargaSatuan extends JPanel {
 		tableColumn = hargaBarangTable.getColumn("Satuan");
 		tableColumn.setMinWidth(200);
 		tableColumn = hargaBarangTable.getColumn("Harga Satuan (Rp)");
+		tableColumn.setCellRenderer(rightRenderer);
 		tableColumn.setMinWidth(300);
 		tableColumn = hargaBarangTable.getColumn("Contoh");
 		tableColumn.setMinWidth(170);
@@ -299,6 +335,7 @@ public class HargaSatuan extends JPanel {
 		tableColumnSatuan = hargaSatuanTable.getColumn("Satuan");
 		tableColumnSatuan.setMinWidth(200);
 		tableColumnSatuan = hargaSatuanTable.getColumn("Harga Satuan (Rp)");
+		tableColumnSatuan.setCellRenderer(rightSatuanRenderer);
 		tableColumnSatuan.setMinWidth(300);
 		tableColumnSatuan = hargaSatuanTable.getColumn("Contoh");
 		tableColumnSatuan.setMinWidth(170);
@@ -396,6 +433,7 @@ public class HargaSatuan extends JPanel {
 		tableColumnJasa = hargaJasaTable.getColumn("Satuan");
 		tableColumnJasa.setMinWidth(200);
 		tableColumnJasa = hargaJasaTable.getColumn("Harga Satuan (Rp)");
+		tableColumnJasa.setCellRenderer(rightJasaRenderer);
 		tableColumnJasa.setMinWidth(300);
 		tableColumnJasa = hargaJasaTable.getColumn("Contoh");
 		tableColumnJasa.setMinWidth(170);
@@ -491,6 +529,7 @@ public class HargaSatuan extends JPanel {
 		tableColumnLain = hargaLainTable.getColumn("Satuan");
 		tableColumnLain.setMinWidth(200);
 		tableColumnLain = hargaLainTable.getColumn("Harga Satuan (Rp)");
+		tableColumnLain.setCellRenderer(rightLainRenderer);
 		tableColumnLain.setMinWidth(300);
 		tableColumnLain = hargaLainTable.getColumn("Contoh");
 		tableColumnLain.setMinWidth(170);
@@ -507,7 +546,7 @@ public class HargaSatuan extends JPanel {
 		pdfButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/pdf.png")));
 		pdfButtonK.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				createPdf();
+				createPdf();
 			}
 		});
 		panel.add(pdfButtonK);
@@ -516,7 +555,7 @@ public class HargaSatuan extends JPanel {
 		printButtonK.setIcon(new ImageIcon(getClass().getResource("/apps/icons/printer.png")));
 		printButtonK.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				printPdf();
+				printPdf();
 			}
 		});
 		panel.add(printButtonK);
@@ -645,5 +684,497 @@ public class HargaSatuan extends JPanel {
 	public void deleteHargaLain(int row) {
 		hargaLainDataini.remove(row);
 		hargaLainTableModel.fireTableDataChanged();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private File getPdfFile() {
+		try {
+			String folderPdf = apps.component.Properties.pdLocation;
+			File folder = new File(folderPdf);
+			if (!folder.isDirectory()) {
+				folder.mkdirs();
+			}
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+			File pdfFile = new File(
+					folderPdf.concat("barang_").concat(simpleDateFormat.format(new Date())).concat(".pdf"));
+			Document document = new Document(PageSize.LETTER, 7f, 7f, 10f, 45f);
+			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(pdfFile.getAbsolutePath()));
+			writer.setPageEvent(new PageNumeration());
+
+			document.open();
+
+			com.itextpdf.text.Font fontTitle = new com.itextpdf.text.Font(FontFamily.TIMES_ROMAN, 12.0f, Font.BOLD);
+
+			Paragraph preface = new Paragraph("DAFTAR HARGA SATUAN BARANG, PEKERJAAN KONSTRUKSI, JASA KONSULTANSI, JASA LAINNYA", fontTitle);
+			preface.setAlignment(Element.ALIGN_CENTER);
+			document.add(preface);
+
+			simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+			preface = new Paragraph("Tanggal print : ".concat(simpleDateFormat.format(new Date())));
+			preface.setAlignment(Element.ALIGN_RIGHT);
+			document.add(preface);
+
+			document.add(new Paragraph(" "));
+
+			PdfPTable table = new PdfPTable(2);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 25, 73});
+			PdfPCell cell;
+			com.itextpdf.text.Font cellTitle = new com.itextpdf.text.Font(FontFamily.TIMES_ROMAN, 12.0f, Font.BOLD);
+
+			cell = new PdfPCell(new Phrase("KEMENTERIAN", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			cell = new PdfPCell(new Phrase(":  ".concat(kementrianTextFieldK.getText())));
+			cell.setPaddingBottom(5);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			cell = new PdfPCell(new Phrase("SATUAN KERJA", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			cell = new PdfPCell(new Phrase(":  ".concat(satuanKerjaTextFieldK.getText())));
+			cell.setPaddingBottom(5);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			cell = new PdfPCell(new Phrase("UNIT KERJA", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			cell = new PdfPCell(new Phrase(":  ".concat(unitKerjaTextFieldK.getText())));
+			cell.setPaddingBottom(5);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			cell = new PdfPCell(new Phrase("TAHUN ANGGARAN", cellTitle));
+			cell.setPaddingBottom(10);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			cell = new PdfPCell(new Phrase(":  ".concat(tahunAngaranTextFieldK.getText())));
+			cell.setPaddingBottom(10);
+			cell.setBorder(0);
+			table.addCell(cell);
+			table.setSpacingAfter(20f);
+			document.add(table);
+			
+			URL url = getClass().getResource("/apps/icons/risetikon.png");
+			InputStream inputStream = url.openStream();
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			int nRead;
+			byte[] data = new byte[16384];
+
+			while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+			  buffer.write(data, 0, nRead);
+			}
+			buffer.flush();
+			com.itextpdf.text.Image image = Image.getInstance(buffer.toByteArray());
+			image.setAbsolutePosition(495f, 680f);
+			document.add(image);
+			
+			url = getClass().getResource("/apps/icons/poltekikon.png");
+			inputStream = url.openStream();
+			buffer = new ByteArrayOutputStream();
+			data = new byte[16384];
+			
+			while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+				buffer.write(data, 0, nRead);
+			}
+			buffer.flush();
+			image = Image.getInstance(buffer.toByteArray());
+			image.setAbsolutePosition(552f, 680f);
+			document.add(image);
+			
+			table = new PdfPTable(2);
+			table.setPaddingTop(30);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 73, 25});
+			
+			cell = new PdfPCell(new Phrase("A   STANDAR HARGA SATUAN BARANG"));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Revisi ke : ".concat(revisiBarangTextFieldK.getText().isEmpty() ? "....." : revisiBarangTextFieldK.getText())));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			document.add(table);
+			
+			table = new PdfPTable(8);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 7, 15, 12, 12, 12, 12, 12, 12});
+			
+			cell = new PdfPCell(new Phrase("No.", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Jenis Barang", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Merek/Type/ Spesifikasi", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Satuan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Harga Satuan (Rp)", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Contoh ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Sumber Informasi ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Keterangan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			
+			for (int i = 0; i < hargaBarangDataini.size(); i++) {
+				Vector<Object> vector = (Vector<Object>) hargaBarangDataini.elementAt(i);
+				for (int j = 0; j < vector.size() - 1; j++) {
+					cell = new PdfPCell(new Phrase(vector.get(j).toString()));
+					cell.setPaddingBottom(5);
+					if (j == 0 || j == 4) {
+						cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+					}
+					table.addCell(cell);
+				}
+			}
+			table.setSpacingAfter(10f);
+			document.add(table);
+			
+			table = new PdfPTable(2);
+			table.setPaddingTop(30);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 73, 25});
+			
+			cell = new PdfPCell(new Phrase("B   STANDAR HARGA SATUAN PEKERJAAN KONSTRUKSI"));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Revisi ke : ".concat(revisiSatuanTextFieldK.getText().isEmpty() ? "....." : revisiSatuanTextFieldK.getText())));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			document.add(table);
+			
+			table = new PdfPTable(8);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 7, 15, 12, 12, 12, 12, 12, 12});
+			
+			cell = new PdfPCell(new Phrase("No.", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Jenis Pekerjaan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Merek/Type/ Spesifikasi", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Satuan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Harga Satuan (Rp)", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Contoh ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Sumber Informasi ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Keterangan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			
+			for (int i = 0; i < hargaSatuanDataini.size(); i++) {
+				Vector<Object> vector = (Vector<Object>) hargaSatuanDataini.elementAt(i);
+				for (int j = 0; j < vector.size() - 1; j++) {
+					cell = new PdfPCell(new Phrase(vector.get(j).toString()));
+					cell.setPaddingBottom(5);
+					if (j == 0 || j == 4) {
+						cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+					}
+					table.addCell(cell);
+				}
+			}
+			table.setSpacingAfter(10f);
+			document.add(table);
+			
+			table = new PdfPTable(2);
+			table.setPaddingTop(30);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 73, 25});
+			
+			cell = new PdfPCell(new Phrase("C   STANDAR HARGA SATUAN JASA KONSULTANSI"));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Revisi ke : ".concat(revisiJasaTextFieldK.getText().isEmpty() ? "....." : revisiJasaTextFieldK.getText())));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			document.add(table);
+			
+			table = new PdfPTable(8);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 7, 15, 12, 12, 12, 12, 12, 12});
+			
+			cell = new PdfPCell(new Phrase("No.", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Jenis Jasa Konsultansi", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Merek/Type/ Spesifikasi", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Satuan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Harga Satuan (Rp)", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Contoh ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Sumber Informasi ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Keterangan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			
+			for (int i = 0; i < hargaJasaDataini.size(); i++) {
+				Vector<Object> vector = (Vector<Object>) hargaJasaDataini.elementAt(i);
+				for (int j = 0; j < vector.size() - 1; j++) {
+					cell = new PdfPCell(new Phrase(vector.get(j).toString()));
+					cell.setPaddingBottom(5);
+					if (j == 0 || j == 4) {
+						cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+					}
+					table.addCell(cell);
+				}
+			}
+			table.setSpacingAfter(10f);
+			document.add(table);
+			
+			table = new PdfPTable(2);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 73, 25});
+			
+			cell = new PdfPCell(new Phrase("D   STANDAR HARGA SATUAN JASA LAINNYA"));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Revisi ke : ".concat(revisiLainTextFieldK.getText().isEmpty() ? "....." : revisiLainTextFieldK.getText())));
+			cell.setPaddingBottom(7);
+			cell.setBorder(0);
+			table.addCell(cell);
+			
+			document.add(table);
+			
+			table = new PdfPTable(8);
+			table.setWidthPercentage(100);
+			table.setWidths(new int[] { 7, 15, 12, 12, 12, 12, 12, 12});
+			
+			cell = new PdfPCell(new Phrase("No.", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Jenis Jasa Lainnya", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Merek/Type/ Spesifikasi", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Satuan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Harga Satuan (Rp)", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Contoh ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Sumber Informasi ", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			cell = new PdfPCell(new Phrase("Keterangan", cellTitle));
+			cell.setPaddingBottom(5);
+			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(cell);
+			
+			for (int i = 0; i < hargaLainDataini.size(); i++) {
+				Vector<Object> vector = (Vector<Object>) hargaLainDataini.elementAt(i);
+				for (int j = 0; j < vector.size() - 1; j++) {
+					cell = new PdfPCell(new Phrase(vector.get(j).toString()));
+					cell.setPaddingBottom(5);
+					if (j == 0 || j == 4) {
+						cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+					}
+					table.addCell(cell);
+				}
+			}
+			
+			table.setSpacingAfter(80f);
+			document.add(table);
+			
+			preface = new Paragraph("Kupang, ……………………..     ");
+			preface.setAlignment(Element.ALIGN_RIGHT);
+			document.add(preface);
+			
+			preface = new Paragraph("Kepala ULP               ");
+			preface.setAlignment(Element.ALIGN_RIGHT);
+			preface.setSpacingAfter(72f);
+			document.add(preface);
+			
+			preface = new Paragraph("……………………………..      ");
+			preface.setAlignment(Element.ALIGN_RIGHT);
+			preface.setPaddingTop(90);
+			document.add(preface);
+			
+			preface = new Paragraph("NIP …………………………     ");
+			preface.setAlignment(Element.ALIGN_RIGHT);
+			document.add(preface);
+			
+			
+			document.close();
+			return pdfFile;
+		} catch (IOException ex) {
+			logger.error(ex.getMessage(), ex);
+			ex.printStackTrace();
+		} catch (DocumentException e) {
+			logger.error(e.getMessage(), e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private void createPdf() {
+		File pdfFile = getPdfFile();
+		if (pdfFile != null) {
+			try {
+				Desktop.getDesktop().open(pdfFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private class PageNumeration extends PdfPageEventHelper {
+		PdfTemplate total;
+
+		public void onOpenDocument(PdfWriter writer, Document document) {
+			total = writer.getDirectContent().createTemplate(30, 16);
+		}
+
+		public void onEndPage(PdfWriter writer, Document document) {
+			PdfPTable table = new PdfPTable(3);
+			try {
+				table.setWidths(new int[] { 24, 24, 2 });
+				table.getDefaultCell().setFixedHeight(10);
+				table.getDefaultCell().setBorder(Rectangle.TOP);
+				PdfPCell cell = new PdfPCell();
+				cell.setBorder(0);
+				cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+				cell.setPhrase(new Phrase(" "));
+				table.addCell(cell);
+
+				cell = new PdfPCell();
+				cell.setBorder(0);
+				cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+				cell.setPhrase(new Phrase(String.format("Halaman %d dari", writer.getPageNumber())));
+				table.addCell(cell);
+
+				cell = new PdfPCell(Image.getInstance(total));
+				cell.setBorder(0);
+				table.addCell(cell);
+				table.setTotalWidth(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
+				table.writeSelectedRows(0, -1, document.leftMargin(), document.bottomMargin() - 10,
+						writer.getDirectContent());
+			} catch (DocumentException de) {
+				throw new ExceptionConverter(de);
+			}
+		}
+
+		public void onCloseDocument(PdfWriter writer, Document document) {
+			ColumnText.showTextAligned(total, Element.ALIGN_LEFT,
+					new Phrase(String.valueOf(writer.getPageNumber() - 1)), 2, 2, 0);
+		}
+	}
+	
+	private void printPdf() {
+		File pdfFile = getPdfFile();
+		if (pdfFile != null) {
+			InputStream is = null;
+			try {
+				PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
+				if (defaultPrintService == null) {
+					JOptionPane.showMessageDialog(null,
+							"<html><span style='font-size:22px;'>Komputer tidak terhubung ke printer</span>",
+							"Perhatian", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				DocPrintJob printerJob = defaultPrintService.createPrintJob();
+
+				is = new BufferedInputStream(new FileInputStream(pdfFile));
+				Doc simpleDoc = new SimpleDoc(is, DocFlavor.INPUT_STREAM.AUTOSENSE, null);
+				printerJob.print(simpleDoc, null);
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null,
+						"<html><span style='font-size:22px;'>Komputer tidak terhubung ke printer</span>", "Perhatian",
+						JOptionPane.ERROR_MESSAGE);
+			}
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

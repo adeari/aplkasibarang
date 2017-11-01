@@ -608,25 +608,13 @@ public class BarangTableUmumPanel extends JPanel {
 		}
 	}
 
-	class PageNumeration extends PdfPageEventHelper {
+	private class PageNumeration extends PdfPageEventHelper {
 		PdfTemplate total;
 
-		/**
-		 * Creates the PdfTemplate that will hold the total number of pages.
-		 * 
-		 * @see com.itextpdf.text.pdf.PdfPageEventHelper#onOpenDocument(
-		 *      com.itextpdf.text.pdf.PdfWriter, com.itextpdf.text.Document)
-		 */
 		public void onOpenDocument(PdfWriter writer, Document document) {
 			total = writer.getDirectContent().createTemplate(30, 16);
 		}
 
-		/**
-		 * Adds a header to every page
-		 * 
-		 * @see com.itextpdf.text.pdf.PdfPageEventHelper#onEndPage(
-		 *      com.itextpdf.text.pdf.PdfWriter, com.itextpdf.text.Document)
-		 */
 		public void onEndPage(PdfWriter writer, Document document) {
 			PdfPTable table = new PdfPTable(3);
 			try {
